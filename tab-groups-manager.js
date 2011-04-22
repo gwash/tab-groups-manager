@@ -1,5 +1,6 @@
 /* //{{{ 
 Copyright (c) 2010-2010, coldwarmhot.
+Copyright (c) 2011-2011, M Rawash <mrawash@gmail.com>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,15 +25,11 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
 
+##################################################################
 
-###################################################################################
-# TODO
-# http://sourceforge.jp/projects/opensource/wiki/licenses%2Fnew_BSD_license       #
-# に参考になる日本語訳がありますが、有効なのは上記英文となります。                #
-###################################################################################
+modified to work with Pentadactyl by M Rawash 
 
-modified to work with Pentadactyl by M Rawash <mrawash@gmail.com> 
-
+##################################################################
 */ //}}}
 
 var INFO = // {{{
@@ -44,7 +41,7 @@ var INFO = // {{{
     <license>New BSD License</license>
     <project name="Pentadactyl" minVersion="1.x"/>
     <p>
-        This plugin add some commands and mappings for extension TabGroups Manager.
+        This plugin add some commands and mappings for extension TabGroupsManager.
     </p>
     <item>
     <tags>group-key</tags>
