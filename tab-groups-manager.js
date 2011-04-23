@@ -468,7 +468,7 @@ var PLUGIN_INFO = //{{{
   ]]></require>
   <detail><![CDATA[
     == Requires ==
-       extension TabGroups Manager
+       extension TabGroupsManager
 
       === Default ===
         options.tabgroupsmanager_group_key = 'x'
@@ -486,79 +486,7 @@ var PLUGIN_INFO = //{{{
   ]]></detail>
 </VimperatorPlugin>; //}}}
 
-// ---------------------------
-// NEWS
-// ---------------------------
-// {{{
-//    2010.06.2:
-//      add commands:
-//          :grouptabopen
-//    2010.05.31:
-//      add commands:
-//          :groupedbuffer
-//      add mappings:
-//          gv, gV, vh, vk, v<Up>, v<Left>, vl, v<Right>, vj, v<Down>
-//    2010.05.29:
-//      add mappings:
-//          vD
-//      add commands:
-//          :groupriladd
-//          :grouprilupdate
-//    2010.05.28:
-//      add commands:
-//          :groupsort
-//          :groupgooglesearch
-//    2010.05.17:
-//      add mappings:
-//          v<, v>
-//    2010.04.26:
-//      add commands:
-//          :groupdo
-//    2010.04.25:
-//      add commands:
-//          :groupedbuffers, :groupedtabs
-//      add mappings:
-//          vb, vB, vV
-//    2010.04.22:
-//      add plugin documentation.
-//    2010.04.21:
-//      add mappings:
-//          vr, vu, vU
-//      change mapping:
-//          U to vU
-//    2010.04.17:
-//      add commands:
-//          :groupundo or :grouprestorelast, :grouprewind, :grouplast
-//      add mutliple version for:
-//          :tabextract
-//      add mappings:
-//          U
-//    2010.04.12:
-//      add commands:
-//          :grouponly
-//    2010.04.11:
-//      add mappings:
-//          x, X, vc, vd, vs, vv, gx, gX
-//    2010.04.10:
-//      add mappings:
-//          v0, v^, v$, [x, ]x
-//    2010.04.02:
-//        add commands:
-//            :groupbartoogle
-//    2010.03.29:
-//        add ! version of commands:
-//            :grouptabprevious
-//            :grouptabnext
-//    2010.03.28:
-//        add commands:
-//            :grouptabprevious
-//            :grouptabnext
-//    2010.03.27:
-//        add icons to completion
-//        add commands:
-//            :groupprevious
-//            :groupnext
-//}}}
+
 
 if (window.TabGroupsManager != undefined) { (function () {
 
@@ -2500,54 +2428,5 @@ statusline.updateTabCount = dactyl.plugins.tabgroupsmanager.updateTabCount
 
 })(); } else
   dactyl.echoerr('TabGroups Manager is not installed')
-
-// ---------------------------
-// TODO
-// ---------------------------
-//{{{
-// O: add support 'activate' for :groupopen
-// O: add support position new group from options
-// O: add mutli actions with filter for commands: groupdelete, groupreload, etc
-// M: <, >
-//
-// # add susspend/unsusspend functionality
-// # rewrite the help page to reflect changes
-//}}}
-
-
-// ---------------------------
-// OK
-// ---------------------------
-//{{{
-//   F: groupedTabElements : function (group) {
-//   v<Left>, ...
-//   vh, ...
-//   gv - repeat last :group!, gV - repeat last :group! in reverse direction
-//   vD - group delete and select previous
-//   group.commands.add(['groupsort'], '', //
-//   group.commands.add(['groupsearch'], 'Search in new group',
-//   group.commands.add(['adddin[amicgroup]'], 'Add dinamic group',
-//   add '#' group
-//   v<, v>
-//   group.commands.add(['tabextracttogroup'], '', // rename to :tabdetachtogroup
-//   group.commands.add(['tabmovetogroup'], '', // rename to :tabattachtogroup
-//   group.commands.add(['groupduplicate'], '', //
-//   rename version groupcreate and groupopen
-//   group.commands.add(['groupdo'], '', //
-//   add sign select tab from grouped tabs to tabopen
-//   add sign select group from group list to groupopen
-//   group.commands.add(['groupedb[uffer]', 'groupedt[ab]'], 'Select buffer of groped group',
-//   group.commands.add(['groupedbuffers', 'groupedtabs'], 'Buffers of group',
-//   add support 'urlseparator' for open more one URLS in new group for :groupopen
-//   add open more one URLS in new group for :groupopen
-//   V - groups, x - group
-//   gx - previous group, gx - next group,
-//   vd - group delete, vc - group create,
-//   group.commands.add(['grouprewind'], '', //
-//   group.commands.add(['grouplast'], '', //
-//   group.commands.add(['tabextracttogroup'], '', // mutli version
-//   group.commands.add(['grouponly'], '', //
-//   map vu, vU ? to undo group
-//}}}
 
 // vim:sw=4 ts=4 et si fdm=marker:
