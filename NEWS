@@ -1,0 +1,20 @@
+2011.04.
+  # Works with Pentadactyl and latest version of TabGroups Manager
+
+  # Commands prefixed with 'tabgroup-' (instead of 'group-')
+  
+  # Group completion uses group icon (instead of active tab's favicon)
+  
+  # Group navigation (v-left/right) skips suspended groups
+  
+  # Suspended groups are indicated as so in group-list (:tabgroup)
+  
+  # Added commands:
+  
+  # Removed commands:
+	:tabgroupgooglesearch
+	:grouptabnext
+	:grouptabprevious
+
+  # Fixed bugs:
+	too many to count!

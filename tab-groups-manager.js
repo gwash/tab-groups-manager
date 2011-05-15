@@ -27,9 +27,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 ##################################################################
 
-modified to work with Pentadactyl by M Rawash 
-
-##################################################################
 */ //}}}
 
 var INFO = // {{{
@@ -41,7 +38,7 @@ var INFO = // {{{
     <license>New BSD License</license>
     <project name="Pentadactyl" minVersion="1.x"/>
     <p>
-        This plugin add some commands and mappings for extension TabGroupsManager.
+        This plugin add some commands and mappings for extension TabGroups Manager.
     </p>
     <item>
     <tags>group-key</tags>
@@ -468,7 +465,7 @@ var PLUGIN_INFO = //{{{
   ]]></require>
   <detail><![CDATA[
     == Requires ==
-       extension TabGroupsManager
+       extension TabGroups Manager
 
       === Default ===
         options.tabgroupsmanager_group_key = 'x'
