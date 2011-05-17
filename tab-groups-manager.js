@@ -55,7 +55,7 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:group</tags>
+    <tags>:tabgroup</tags>
     <spec>:<oa>count</oa>gr<oa>oup</oa><oa>!</oa> <a>name|id</a></spec>
     <spec><oa>count</oa>vv</spec>
     <description>
@@ -82,16 +82,16 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupcreate</tags>
-    <spec>:groupc<oa>reate</oa> <a>name</a></spec>
+    <tags>:tabgroupcreate</tags>
+    <spec>:tabgroupc<oa>reate</oa> <a>name</a></spec>
     <spec>vc</spec>
     <description>
         <p>Create new group with <a>name</a>.</p>
     </description>
     </item>
     <item>
-    <tags>:groupopen</tags>
-    <spec>:groupo<oa>pen</oa><oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, ...</spec>
+    <tags>:tabgroupopen</tags>
+    <spec>:tabgroupo<oa>pen</oa><oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, ...</spec>
     <spec>x</spec>
     <description>
         <p>Just like <ex>:tabopen</ex> but also uses a new group for all of URLs.
@@ -102,13 +102,13 @@ var INFO = // {{{
     <tags>X</tags>
     <spec>X</spec>
     <description>
-        <p>Show a <ex>:groupopen</ex> prompt containing the current URL.
+        <p>Show a <ex>:tabgroupopen</ex> prompt containing the current URL.
         Useful if you want to go somewhere by editing the URL of the current page.</p>
     </description>
     </item>
     <item>
-    <tags>:groups</tags>
-    <spec>:groups <oa>filter</oa></spec>
+    <tags>:tabgroups</tags>
+    <spec>:tabgroups <oa>filter</oa></spec>
     <spec>V</spec>
     <description>
         <p>
@@ -126,9 +126,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupbuffer</tags>
+    <tags>:tabgroupbuffer</tags>
     <tags>:grouptab</tags>
-    <spec>:groupb<oa>uffer</oa> <a>index</a></spec>
+    <spec>:tabgroupb<oa>uffer</oa> <a>index</a></spec>
     <spec>:groupt<oa>ab</oa> <a>index</a></spec>
     <spec>vb</spec>
     <description>
@@ -138,9 +138,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupedbuffer</tags>
+    <tags>:tabgroupedbuffer</tags>
     <tags>:groupedtab</tags>
-    <spec>:groupedb<oa>uffer</oa> <a>index</a></spec>
+    <spec>:tabgroupedb<oa>uffer</oa> <a>index</a></spec>
     <spec>:groupedt<oa>ab</oa> <a>index</a></spec>
     <description>
         <p>
@@ -149,9 +149,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupbuffers</tags>
+    <tags>:tabgroupbuffers</tags>
     <tags>:grouptabs</tags>
-    <spec>:groupbuffers <oa>filter</oa></spec>
+    <spec>:tabgroupbuffers <oa>filter</oa></spec>
     <spec>:grouptabs <oa>filter</oa></spec>
     <spec>vB</spec>
     <description>
@@ -162,9 +162,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupedbuffers</tags>
+    <tags>:tabgroupedbuffers</tags>
     <tags>:groupedtabs</tags>
-    <spec>:groupedbuffers <oa>filter</oa></spec>
+    <spec>:tabgroupedbuffers <oa>filter</oa></spec>
     <spec>:groupedtabs <oa>filter</oa></spec>
     <description>
         <p>
@@ -174,8 +174,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupreload</tags>
-    <spec>:groupr<oa>eload</oa> <oa>group</oa></spec>
+    <tags>:tabgroupreload</tags>
+    <spec>:tabgroupr<oa>eload</oa> <oa>group</oa></spec>
     <spec>vr</spec>
     <description>
         <p>
@@ -184,11 +184,11 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupmove</tags>
+    <tags>:tabgroupmove</tags>
     <tags>:gmove</tags>
     <spec>:<oa>count</oa>groupm<oa>ove</oa><oa>!</oa></spec>
-    <spec>:groupm<oa>ove</oa><oa>!</oa> <oa>N</oa></spec>
-    <spec>:groupm<oa>ove</oa><oa>!</oa> <oa>-N</oa> | <oa>+N</oa></spec>
+    <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>N</oa></spec>
+    <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>-N</oa> | <oa>+N</oa></spec>
     <spec>v&lt;</spec>
     <spec>v&gt;</spec>
     <description>
@@ -198,9 +198,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupprevious</tags>
+    <tags>:tabgroupprevious</tags>
     <tags>:gprevious</tags>
-    <spec>:groupp<oa>revious</oa></spec>
+    <spec>:tabgroupp<oa>revious</oa></spec>
     <spec>:gp<oa>revious</oa></spec>
     <spec>[x</spec>
     <spec>gX</spec>
@@ -213,9 +213,9 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupnext</tags>
+    <tags>:tabgroupnext</tags>
     <tags>:gnext</tags>
-    <spec>:groupn<oa>ext</oa></spec>
+    <spec>:tabgroupn<oa>ext</oa></spec>
     <spec>:gn<oa>ext</oa></spec>
     <spec>]x</spec>
     <spec>gx</spec>
@@ -228,30 +228,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:grouptabprevious</tags>
-    <tags>:gtprevious</tags>
-    <spec>:grouptabp<oa>revious</oa></spec>
-    <spec>:gtp<oa>revious</oa></spec>
-    <description>
-        <p>
-          Select previous tab in group. If <oa>!</oa> is specified the select wraps around the start of the group tab list.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:grouptabnext</tags>
-    <tags>:gtnext</tags>
-    <spec>:grouptabn<oa>ext</oa></spec>
-    <spec>:gtn<oa>ext</oa></spec>
-    <description>
-        <p>
-          Select next tab in group. If <oa>!</oa> is specified the select wraps around the end of the group tab list.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:groupbookmark</tags>
-    <spec>:groupbo<oa>okmark</oa> <oa>group</oa></spec>
+    <tags>:tabgroupbookmark</tags>
+    <spec>:tabgroupbo<oa>okmark</oa> <oa>group</oa></spec>
     <description>
         <p>
           Bookmark <oa>group</oa>.
@@ -259,8 +237,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupbookmarkall</tags>
-    <spec>:groupbookmarka<oa>ll</oa></spec>
+    <tags>:tabgroupbookmarkall</tags>
+    <spec>:tabgroupbookmarka<oa>ll</oa></spec>
     <description>
         <p>
           Bookmark all group.
@@ -287,8 +265,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:grouprename</tags>
-    <spec>:grouprename <a>name</a></spec>
+    <tags>:tabgrouprename</tags>
+    <spec>:tabgrouprename <a>name</a></spec>
     <description>
         <p>
         Rename group by <oa>name</oa>.
@@ -296,10 +274,10 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupdelete</tags>
-    <tags>:groupclose</tags>
-    <spec>:groupd<oa>elete</oa> <oa>group</oa></spec>
-    <spec>:groupc<oa>lose</oa> <oa>group</oa></spec>
+    <tags>:tabgroupdelete</tags>
+    <tags>:tabgroupclose</tags>
+    <spec>:tabgroupd<oa>elete</oa> <oa>group</oa></spec>
+    <spec>:tabgroupc<oa>lose</oa> <oa>group</oa></spec>
     <spec>vd</spec>
     <spec>vD</spec>
     <description>
@@ -309,8 +287,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupunclose</tags>
-    <spec>:groupunc<oa>lose</oa> <a>id</a></spec>
+    <tags>:tabgroupunclose</tags>
+    <spec>:tabgroupunc<oa>lose</oa> <a>id</a></spec>
     <description>
         <p>
         Restore closed group by <a>id</a>.
@@ -318,8 +296,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupsleep</tags>
-    <spec>:groups<oa>leep</oa> <oa>group</oa></spec>
+    <tags>:tabgroupsleep</tags>
+    <spec>:tabgroups<oa>leep</oa> <oa>group</oa></spec>
     <spec>vs</spec>
     <description>
         <p>
@@ -328,8 +306,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupunsleep</tags>
-    <spec>:groupuns<oa>leep</oa> <oa>id</oa></spec>
+    <tags>:tabgroupunsleep</tags>
+    <spec>:tabgroupuns<oa>leep</oa> <oa>id</oa></spec>
     <description>
         <p>
         Restore sleeping group by <a>id</a>.
@@ -337,8 +315,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:grouprestore</tags>
-    <spec>:groupr<oa>estore</oa> <a>id</a></spec>
+    <tags>:tabgrouprestore</tags>
+    <spec>:tabgroupr<oa>estore</oa> <a>id</a></spec>
     <description>
         <p>
         Restore group by <a>id</a>.
@@ -346,8 +324,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupclosedlistclear</tags>
-    <spec>:groupclosedlistclear</spec>
+    <tags>:tabgroupclosedlistclear</tags>
+    <spec>:tabgroupclosedlistclear</spec>
     <description>
         <p>
         Clear group closed list.
@@ -355,12 +333,12 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:grouponly</tags>
-    <spec>:groupo<oa>nly</oa><oa>!</oa></spec>
+    <tags>:tabgrouponly</tags>
+    <spec>:tabgroupo<oa>nly</oa><oa>!</oa></spec>
     <description><p>Sleep all another groups. If <oa>!</oa> is specified close all another group.</p></description>
     </item>
     <item>
-    <tags>:groupundo</tags>
+    <tags>:tabgroupundo</tags>
     <spec>:<oa>count</oa>groupu<oa>ndo</oa><oa>!</oa></spec>
     <spec>:<oa>count</oa>grouprestorel<oa>ast</oa><oa>!</oa></spec>
     <spec>vu</spec>
@@ -368,7 +346,7 @@ var INFO = // {{{
     <description><p>Restore <oa>count</oa> last sleeping groups.  If <oa>!</oa> is specified restore closed groups.</p></description>
     </item>
     <item>
-    <tags>:grouprewind</tags>
+    <tags>:tabgrouprewind</tags>
     <spec>:<oa>count</oa>groupre<oa>wind</oa></spec>
     <spec>:<oa>count</oa>gre<oa>wind</oa></spec>
     <spec>v0</spec>
@@ -378,7 +356,7 @@ var INFO = // {{{
     <description><p>Select <oa>count</oa>th or first group.</p></description>
     </item>
     <item>
-    <tags>:grouplast</tags>
+    <tags>:tabgrouplast</tags>
     <spec>:<oa>count</oa>groupl<oa>ast</oa></spec>
     <spec>:<oa>count</oa>gl<oa>ast</oa></spec>
     <spec>v$</spec>
@@ -387,13 +365,13 @@ var INFO = // {{{
     <description><p>Select <oa>count</oa>th or last group.</p></description>
     </item>
     <item>
-    <tags>:groupbartoogle</tags>
-    <spec>:groupbartoogle</spec>
+    <tags>:tabgroupbartoogle</tags>
+    <spec>:tabgroupbartoogle</spec>
     <description><p>Toogle group bar</p></description>
     </item>
     <item>
-    <tags>:groupdo</tags>
-    <spec>:groupdo<a>cmd</a></spec>
+    <tags>:tabgroupdo</tags>
+    <spec>:tabgroupdo<a>cmd</a></spec>
     <description>
         <p>
             Execute <a>cmd</a> in each group. <a>cmd</a> is executed in each group starting with the first and ending with the last which becomes the current group.
@@ -404,8 +382,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupduplicate</tags>
-    <spec>:groupdu<oa>plicate</oa></spec>
+    <tags>:tabgroupduplicate</tags>
+    <spec>:tabgroupdu<oa>plicate</oa></spec>
     <description>
         <p>
             Duplicate the current group and switch to the duplicate. If <oa>count</oa> is given, duplicate the group <oa>count</oa> times.
@@ -413,8 +391,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupsort</tags>
-    <spec>:groupsort</spec>
+    <tags>:tabgroupsort</tags>
+    <spec>:tabgroupsort</spec>
     <description>
         <p>
             Sort group list.
@@ -422,17 +400,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:groupgooglesearch</tags>
-    <spec><oa>count</oa>:groupgooglesearch <a>pattern</a></spec>
-    <description>
-        <p>
-            Open new group with <oa>count</oa> results search by Google. if <oa>count</oa> not given, open 10 results.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:groupriladd</tags>
-    <spec><oa>count</oa>:groupriladd <oa>-type type</oa><oa>tag</oa></spec>
+    <tags>:tabgroupriladd</tags>
+    <spec><oa>count</oa>:tabgroupriladd <oa>-type type</oa><oa>tag</oa></spec>
     <description>
         <p>
             Open new group with <oa>count</oa> Read It Later items by <oa>tag</oa>. if <oa>count</oa> not given, open 10 items. if <oa>type</oa> not given, used pages type. if <oa>tag</oa> not given, used empty tag.
@@ -440,8 +409,8 @@ var INFO = // {{{
     </description>
     </item>
     <item>
-    <tags>:grouprilupdate</tags>
-    <spec><oa>count</oa>:grouprilupdate <oa>-type type</oa><oa>tag</oa></spec>
+    <tags>:tabgrouprilupdate</tags>
+    <spec><oa>count</oa>:tabgrouprilupdate <oa>-type type</oa><oa>tag</oa></spec>
     <description>
         <p>
            Reload current group with <oa>count</oa> Read It Later items by <oa>tag</oa>. if <oa>count</oa> not given, open 10 items. if <oa>type</oa> not given, used pages type. if <oa>tag</oa> not given, used empty tag.
@@ -474,7 +443,7 @@ var PLUGIN_INFO = //{{{
     == Example ==
       === Close group ===
         >||
-          :groupclose 14: group name
+          :tabgroupclose 14: group name
         ||<
         Close group by id equal 14
 
@@ -1815,24 +1784,6 @@ group.commands.add(['tabgroupl[ast]', 'gl[ast]'], 'Select last group',
         argCount: '0',
     }, true);
 
-/* //REDUNDANT//
-group.commands.add(['grouptabp[revious]', 'gtp[revious]'], 'Previous group tab',
-    function(args){
-        dactyl.plugins.tabgroupsmanager.group("").selectPreviousTab(args.bang)
-    }, {
-        bang: true,
-        argCount: '0',
-    }, true);
-
-group.commands.add(['grouptabn[ext]', 'gtn[ext]'], 'Next group tab',
-    function(args){
-        dactyl.plugins.tabgroupsmanager.group("").selectNextTab(args.bang)
-    }, {
-        bang: true,
-        argCount: '0',
-    }, true);
-*/
-
 group.commands.add(['tabgroupdo', 'tgdo'], 'Execute a command in each group',
     function (args) {
         for (let i = 0; i < dactyl.plugins.tabgroupsmanager.groupCount(); i++) {
@@ -2089,93 +2040,6 @@ group.commands.add(['tabgroupsort'], 'Sort groups',
     }, {
         argCount: '0',
     }, true);
-
-(function() {
-
-var p = function (arg) {
-    Application.console.log(arg);
-    // dactyl.log(arg);
-}
-
-// Simple $X. os0x version
-//function $X (exp, context, resolver) {
-//    context || (context = document);
-//    var Doc = context.ownerDocument || context;
-//    var result = Doc.evaluate(exp, context, resolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-//    for (var i = 0, len = result.snapshotLength, res = []; i < len; i++) {
-//        res.push(result.snapshotItem(i));
-//    }
-//    return res;
-//}
-
-//function getGoogleElements (word) {
-//     var [lang] = Cc['@mozilla.org/network/protocol;1?name=http']
-//                            .getService(Ci.nsIHttpProtocolHandler)
-//                            .language.split('-', 1);
-//     var xhr = new XMLHttpRequest();
-//     var endpoint = 'http://www.google.co.jp/search';
-//     var reqURL = endpoint + '?hl=' + lang + '&q=' + encodeURIComponent(word);
-//     xhr.open('GET', reqURL, false);
-//     xhr.send(null);
-//
-//     var div = window.content.document.createElement('div');
-//     div.innerHTML = xhr.responseText;
-//
-//     return $X('//div/ol/li/h3/a', div);
-//}
-
-//group.commands.add(['tabgroupgooglesearch'], 'View search results in new groups',
-//    function(args){
-//        let arg = args.literalArg
-//        let special = args.bang
-//        let count = args.count
-//        let regex = new RegExp('/url\\?q=([^&]+)');
-//        let urls = getGoogleElements(arg).map(function(e) (e.href.match(regex) ? decodeURIComponent(RegExp.$1) : e.href)).slice(0, count)
-//
-//        dactyl.plugins.tabgroupsmanager.createGroup(urls, [], name, special)
-//
-////        if (ret)
-////            dactyl.echomsg("restored group with name `" + ret.name + "'", 9);
-////        else
-////            dactyl.echoerr("group not restored");
-//    }, {
-//        bang: true,
-//        count: true,
-//        argCount: '1',
-//        literal: 0
-//    }, true);
-
-//group.commands.add(['gsearch'],
-//    'GoogleSearch, and AutoComplete',
-//    function (args) {
-//        var url = args.string;
-//        if (url.indexOf('http') != 0) {
-//            url = 'http://www.google.co.jp/search?q=' + encodeURIComponent(args.string);
-//        }
-//        dactyl.open(url, args.bang? dactyl.NEW_TAB : null);
-//    }, {
-//        completer: function (context) {
-//            context.filters = [function() true];
-//            context.keys = {text: "url", description: "title", icon: "icon"};
-//            context.title = ['URL', 'TITLE'];
-//
-//            var regex = new RegExp('/url\\?q=([^&]+)');
-//            context.completions = getGoogleElements(context.filter).map(function(e) {
-//                var url = e.href.match(regex) ? decodeURIComponent(RegExp.$1) : e.href;
-//                return {
-//                    url:   url,
-//                    icon:  bookmarks.getFavicon(url),
-//                    title: e.textContent
-//                };
-//            });
-//        },
-//        argCount: '*',
-//        bang: true,
-//    },
-//    true
-//);
-
-})();
 
 if (window.RIL != undefined) {
     group.commands.add(['groupopenrilpin'], 'Add RIL pin group',
