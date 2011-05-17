@@ -30,11 +30,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 */ //}}}
 
 var INFO = // {{{
-<plugin name="tab-groups-manager" version="0.3"
+<plugin name="tab-groups-manager" version="0.4"
         href=""
         summary="for TabGroups Manager Addon"
         xmlns="http://vimperator.org/namespaces/liberator">
-    <author email="coldwarmhot@yandex.ru">coldwarmhot</author>
+    <author email="mrawash@gmail.com">M Rawash</author>
     <license>New BSD License</license>
     <project name="Pentadactyl" minVersion="1.x"/>
     <p>
@@ -185,7 +185,7 @@ var INFO = // {{{
     </item>
     <item>
     <tags>:tabgroupmove</tags>
-    <tags>:gmove</tags>
+    <tags>:tgmove</tags>
     <spec>:<oa>count</oa>groupm<oa>ove</oa><oa>!</oa></spec>
     <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>N</oa></spec>
     <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>-N</oa> | <oa>+N</oa></spec>
@@ -199,9 +199,9 @@ var INFO = // {{{
     </item>
     <item>
     <tags>:tabgroupprevious</tags>
-    <tags>:gprevious</tags>
+    <tags>:tgprevious</tags>
     <spec>:tabgroupp<oa>revious</oa></spec>
-    <spec>:gp<oa>revious</oa></spec>
+    <spec>:tgp<oa>revious</oa></spec>
     <spec>[x</spec>
     <spec>gX</spec>
     <spec>vh</spec>
@@ -214,9 +214,9 @@ var INFO = // {{{
     </item>
     <item>
     <tags>:tabgroupnext</tags>
-    <tags>:gnext</tags>
+    <tags>:tgnext</tags>
     <spec>:tabgroupn<oa>ext</oa></spec>
-    <spec>:gn<oa>ext</oa></spec>
+    <spec>:tgn<oa>ext</oa></spec>
     <spec>]x</spec>
     <spec>gx</spec>
     <spec>vl</spec>
