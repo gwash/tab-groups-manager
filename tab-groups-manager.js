@@ -715,6 +715,13 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     }
                     this.withUpdateWithSourceGroup("sleepGroup", [])
                 },
+                suspend: function() {
+                    if (this.id == -1) {
+                        dactyl.echoerr('nobody group not sleeping');
+                        return false;
+                    }
+                    this.withUpdateWithSourceGroup("suspendGroup", [])
+                },
                 close: function(reverse) {
                     let prev = this.previous
                     this.withUpdateWithSourceGroup("close", [])
@@ -741,6 +748,13 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     }
                     this.endUpdate()
                 },
+                unsuspend: function(){
+                    if (this.id == -1) {
+                        dactyl.echoerr('nobody group not suspended');
+                        return false;
+                    }
+                    this.withUpdateWithSourceGroup("unsuspendGroup", [])
+                },   
                 unsleep: function(){
                     if (this.id == -1)
                         return false;
@@ -1240,6 +1254,15 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             }
             return ret
         },
+        suspendedGroupElements : function () {
+            var ret = []
+            for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
+                let g = TabGroupsManager.allGroups.childNodes.item(i).group
+                if (g.suspended)
+                    ret.push([g.id + ": " + g.name, g.name + " - " + g.titleList])
+            }
+            return ret
+        },
         closedGroupElements : function () {
             var ret = []
             for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
@@ -1250,7 +1273,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             return ret
         },
         restorableGroupElements : function () {
-            return this.sleepingGroupElements() + this.closedGroupElements()
+            return this.suspendedGroupElements() + this.sleepingGroupElements() + this.closedGroupElements()
         },
         // Completion
         completion_group : function (context) {
@@ -1268,16 +1291,19 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             context.title = ['Tab', 'Group - Url'];
             context.completions = this.groupedTabElements(undefined);
         },
-        completion_inactiveGroup : function (context, caption, fun){
+        completion_inactiveGroup : function (context, caption, func){
             context.filters = [function() true];
             context.title = [caption, 'Name - Title list'];
-            context.completions = dactyl.plugins.tabgroupsmanager[fun].apply(dactyl.plugins.tabgroupsmanager, [])
+            context.completions = dactyl.plugins.tabgroupsmanager[func].apply(dactyl.plugins.tabgroupsmanager, [])
         },
         completion_sleepingGroup : function (context){
-            return this.completion_inactiveGroup(context, 'Sleeping group', "sleepingGroupElements")
+            return this.completion_inactiveGroup(context, 'Sleeping Group', "sleepingGroupElements")
+        },
+        completion_suspendedGroup : function (context){
+            return this.completion_inactiveGroup(context, 'Suspended Group', "suspendedGroupElements")
         },
         completion_closedGroup : function (context){
-            return this.completion_inactiveGroup(context, 'Closed group', "closedGroupElements")
+            return this.completion_inactiveGroup(context, 'Closed Group', "closedGroupElements")
         },
         completion_restorableGroup : function (context){
             return dactyl.plugins.tabgroupsmanager.completion_inactiveGroup(context, 'Group', "restorableGroupElements")
@@ -1970,7 +1996,7 @@ group.commands.add(['tabgroupsl[eep]'], 'Sleep group',
         literal: 0,
     }, true);
 
-group.commands.add(['tabgroupuns[leep]'], 'Restore sleeping group',
+group.commands.add(['tabgroupunsl[eep]'], 'Restore sleeping group',
     function(args){
         let ret = dactyl.plugins.tabgroupsmanager.restorableGroup(args.literalArg).unsleep()
         if (ret)
@@ -1982,6 +2008,24 @@ group.commands.add(['tabgroupuns[leep]'], 'Restore sleeping group',
         completer: function (context) dactyl.plugins.tabgroupsmanager.completion_sleepingGroup(context),
         literal: 0,
     }, true);
+group.commands.add(['tabgroupsu[spend]'], 'Suspend group',
+    function(args){
+        dactyl.plugins.tabgroupsmanager.group(args.literalArg).suspend()
+    }, {
+        argCount: '?',
+        completer: function (context) dactyl.plugins.tabgroupsmanager.completion_group(context),
+        literal: 0,
+    }, true);
+
+group.commands.add(['tabgroupunsu[spend]'], 'Unsuspend group',
+    function(args){
+        dactyl.plugins.tabgroupsmanager.group(args.literalArg).unsuspend()
+    }, {
+        argCount: '?',
+        completer: function (context) dactyl.plugins.tabgroupsmanager.completion_suspendedGroup(context),
+        literal: 0,
+    }, true);
+
 
 group.commands.add(['tabgroupr[estore]'], 'Restore group',
     function(args){
@@ -1998,8 +2042,9 @@ group.commands.add(['tabgroupr[estore]'], 'Restore group',
         argCount: '*',
         bang: true,
         completer: function(context){
-            let captions = ["Sleeping groups", "Closed groups"]
+            let captions = ["Suspended Groups", "Sleeping Groups", "Closed Groups"]
             let functions = [
+                function (context) plugin.completion_suspendedGroup(context),
                 function (context) plugin.completion_sleepingGroup(context),
                 function (context) plugin.completion_closedGroup(context)
             ]
