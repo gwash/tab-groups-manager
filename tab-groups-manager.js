@@ -621,6 +621,8 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                         this.originalItem.setSelectedTab(tab)
                     else if (special)
                         this.originalItem.setSelectedTab(this.originalItem.firstTab)
+                    else
+                        this.originalItem.setSelectedTab(this.originalItem.firstTab)
                     this.endUpdate()
                 },
                 loadUrls : function (a_urls) {
@@ -782,7 +784,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 },
                 restore: function(){
                     this.beginUpdate()
-                    let ret = this.unsleep() || this.unclose()
+                    let ret = this.unsuspend() || this.unsleep() || this.unclose()
                     this.endUpdate()
                     // if (ret)
                     //     dactyl.echomsg('restored group with name ' + this.name, 9);
@@ -1203,30 +1205,39 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             var ret = []
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
-                //let key = g.id + ": " + g.name
-                let key = i+1 + ": " + g.name
                 let label = "suspended"
                 if (!g.suspended)
                     label = g.selectedTab.label
-                let caption = "[" + label + "/" + g.displayTabCount + "] - " + g.name
-                let el = [key, caption]
-                el.icon = g.image
-                ret.push(el)
-            }
+
+                ret.push({
+                    text: i+1 + ": " + g.name,
+                    caption:  "[" + label + "/" + g.displayTabCount + "]",
+//                    indicator: indicator,
+                    icon: g.image
+                });
+             }
             return ret
         },
         groupTabElements : function (group) {
             if (!group)
                 group = TabGroupsManager.allGroups.selectedGroup
             var ret = []
-                for (var j = 0; j < group.tabArray.length; j++) {
-                    let tab = group.tabArray[j]
-                    let guid = (tab._tPos + 1) + ": "+ tab.label
-                    let caption = tab.linkedBrowser.contentDocument.location.href
-                    let el = [guid, caption]
-                    el.icon = tab.image
-                    ret.push(el)
-                }
+            for (var i = 0; i < group.tabArray.length;i++) {
+                let tab = group.tabArray[i];
+                let url = tab.linkedBrowser.contentDocument.location.href;
+                let indicator = " ";
+                if (i == group.selectedTab.dactylOrdinal-1)
+                   indicator = "%"
+                else if (i == group.lastTab.dactylOrdinal-1)
+                   indicator = "#";
+ 
+                ret.push({
+                    text: [i+1 + ": " + (tab.label || "(Untitled)"), i+1 + ": " + url],
+                    url:  template.highlightURL(url),
+                    indicator: indicator,
+                    icon: tab.image || DEFAULT_FAVICON
+                });
+            }
             return ret
         },
         groupedTabElements : function (group) {
@@ -1250,16 +1261,25 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             var ret = []
             for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
                 var g = TabGroupsManager.sleepingGroups.store[i]
-                ret.push([g.id + ": " + g.name, g.name + " - " + g.titleList])
-            }
+                ret.push({
+                    text: g.id + ": " + g.name,
+                    caption:  g.name + " - " + g.titleList,
+                    icon: g.image
+                 });
+                }
             return ret
         },
         suspendedGroupElements : function () {
             var ret = []
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
-                if (g.suspended)
-                    ret.push([g.id + ": " + g.name, g.name + " - " + g.titleList])
+                if (g.suspended) {
+                    ret.push({
+                        text: g.id + ": " + g.name,
+                        caption:  g.name + " - " + g.suspendTitleList,
+                        icon: g.image
+                    });
+                }
             }
             return ret
         },
@@ -1267,9 +1287,12 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             var ret = []
             for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
                 var g = TabGroupsManager.closedGroups.store[i]
-                var el = [g.id + ": " + g.name, g.name + " - " + g.titleList]
-                ret.push(el)
-            }
+                ret.push({
+                    text: g.id + ": " + g.name,
+                    caption:  g.name + " - " + g.titleList,
+                    icon: g.image
+                 });
+             }
             return ret
         },
         restorableGroupElements : function () {
@@ -1277,22 +1300,32 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         },
         // Completion
         completion_group : function (context) {
-            context.filters = [function() true];
+            filter = context.filter.toLowerCase();
+            context.anchored = false;
             context.title = ['Group', '[Tab / Length] - Name'];
+            context.keys = { text: "text", description: "caption", icon: "icon" };
+            context.compare = CompletionContext.Sort.number;
             context.completions = this.groupElements();
         },
         completion_groupTab : function (context) {
-            context.filters = [function() true];
-            context.title = ['Tab', 'Url'];
+            filter = context.filter.toLowerCase();
+            context.anchored = false;
+            context.title = ["Buffer", "URL"];
+            context.keys = { text: "text", description: "url", icon: "icon" };
+            context.compare = CompletionContext.Sort.number;
+            //TODO show indicators
             context.completions = this.groupTabElements(undefined);
         },
-        completion_groupedTab : function (context) {
+       completion_groupedTab : function (context) {
             context.filters = [function() true];
             context.title = ['Tab', 'Group - Url'];
             context.completions = this.groupedTabElements(undefined);
         },
         completion_inactiveGroup : function (context, caption, func){
-            context.filters = [function() true];
+            filter = context.filter.toLowerCase();
+            context.anchored = false;
+            context.keys = { text: "text", description: "caption", icon: "icon" };
+            context.compare = CompletionContext.Sort.number;
             context.title = [caption, 'Name - Title list'];
             context.completions = dactyl.plugins.tabgroupsmanager[func].apply(dactyl.plugins.tabgroupsmanager, [])
         },
@@ -1489,6 +1522,8 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         selectGroup : function(arg, special, count) {
             if (count > 0)
                 this.getGroupByIndex(count - 1).select()
+            else if (/^\d+$/.test(arg))
+                this.getGroupByIndex(arg - 1).select()
             else if (special)
                 this.selectGroupByName(arg.replace(/\d+: /, ""), true)
             else
@@ -1685,15 +1720,18 @@ group.commands.add(['tabgroupb[uffer]', 'groupt[ab]'], 'Buffer of group',
         let count   = args.count;
         let arg     = args.literalArg;
         // TODO let group = args["-group"]
+        let group = TabGroupsManager.allGroups.selectedGroup;
 
         if (arg && count > 0)
-        {
-            if (/^\d+$/.test(arg))
-                tabs.switchTo(arg, special);
-            else
-                dactyl.echoerr("E488: Trailing characters");
-        } else if (count > 0)
-            tabs.switchTo(count.toString(), special);
+            dactyl.echoerr("E488: Trailing characters");
+        else if (count > 0)
+            group.selectNthTabInGroup(count-1);
+        else if (!arg && special)
+            dactyl.plugins.tabgroupsmanager.group("").selectNextTab();
+        else if (/^\d+$/.test(arg))
+            group.selectNthTabInGroup(arg-1);
+        else if (/^\d+:/.test(arg))
+            group.selectNthTabInGroup(arg.match(/^\d+/)-1);
         else
             tabs.switchTo(arg, special);
 
@@ -1743,7 +1781,7 @@ group.commands.add(['tabgroupedb[uffer]', 'groupedt[ab]'], 'Buffer of group',
         literal: 0,
     }, true);
 
-group.commands.add(['tabgroupedbuffers', 'groupedtabs'], 'Show buffers grouped by group',
+group.commands.add(['tabgroupedbuffers', 'groupedtabs'], 'Show buffers grouped by active group',
     function(args){
         dactyl.plugins.tabgroupsmanager.showGroupedTabs("")
     }, {
@@ -2039,7 +2077,7 @@ group.commands.add(['tabgroupr[estore]'], 'Restore group',
         } else
             dactyl.echoerr("group not restored");
     }, {
-        argCount: '*',
+        argCount: '1',
         bang: true,
         completer: function(context){
             let captions = ["Suspended Groups", "Sleeping Groups", "Closed Groups"]
@@ -2051,6 +2089,7 @@ group.commands.add(['tabgroupr[estore]'], 'Restore group',
             let plugin = dactyl.plugins.tabgroupsmanager
             context.fork.apply(context, [captions[0], 0, context, functions[0]])
             context.fork.apply(context, [captions[1], 0, context, functions[1]])
+            context.fork.apply(context, [captions[2], 0, context, functions[2]])
         },
         literal: 0
     }, true);
@@ -2078,7 +2117,7 @@ group.commands.add(['tabgroupbartoogle'], 'Toogle group bar',
         argCount: '0',
     }, true);
 
-//TODO: sort options
+//TODO sort options
 group.commands.add(['tabgroupsort'], 'Sort groups',
     function(args){
         dactyl.plugins.tabgroupsmanager.groups.sort()
@@ -2217,7 +2256,7 @@ if (groupAltKey) {
     group.mappings.add(myModes, ["g" + groupAltKey],
         "Switch to next finded group",
         function (count) {
-            if (count) {
+            if (count && count < 0) {
                 dactyl.plugins.tabgroupsmanager.getGroupByIndex(count - 1).select()
             } else {
                 dactyl.plugins.tabgroupsmanager.selectGroupByName(dactyl.plugins.tabgroupsmanager.lastFilter, true, false)
@@ -2286,8 +2325,8 @@ if (groupAltKey) {
 
     group.mappings.add(myModes, [groupAltKey + "s"],
         "Sleep group",
-        function (count) { dactyl.plugins.tabgroupsmanager.group().sleep() },
-        { count: true });
+        function () { dactyl.plugins.tabgroupsmanager.group().sleep() },
+        { count: false });
 
     group.mappings.add(myModes, [groupAltKey + "u"],
         "Undo close last group",
@@ -2297,8 +2336,6 @@ if (groupAltKey) {
         "Restore group",
         function () {
             CommandExMode().open("tabgrouprestore! ");
-            // commandline.open(":", "grouprestore " + dactyl.plugins.tabgroupsmanager.lastRestorableGroup().guid, modes.EX);
-            // commandline.open(":", "grouprestore " + dactyl.plugins.tabgroupsmanager.lastRestorableGroup().id + ": " + dactyl.plugins.tabgroupsmanager.lastRestorableGroup().name, modes.EX);
             });
 
     group.mappings.add(myModes, [groupAltKey + "k", groupAltKey + "<Up>", groupAltKey + "0", groupAltKey + "^"],
