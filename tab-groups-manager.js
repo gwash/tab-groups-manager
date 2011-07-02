@@ -547,6 +547,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     }
                     return ret
                 },
+                //FIXME
                 get tabIndex() {
                     return this.originalItem.tabArray.indexOf(this.originalItem.selectedTab)
                 },
@@ -563,7 +564,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 tabsByFilter : function(filter) {
                     return dactyl.plugins.tabgroupsmanager.groupTabs(this.originalItem, filter)
                 },
-                // Update
+                // Update,
                 beginUpdate : function () {
                     this.showGroupBar = TabGroupsManager.groupBarDispHide.dispGroupBar
                 },
@@ -1208,10 +1209,14 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 let label = "suspended"
                 if (!g.suspended)
                     label = g.selectedTab.label
+//                let indicator = " ";
+//                if (g == TabGroupsManager.allGroups.selectedGroup)
+//                    indicator = "%";
 
                 ret.push({
                     text: i+1 + ": " + g.name,
-                    caption:  "[" + label + "/" + g.displayTabCount + "]",
+                    caption: label + " [" + g.displayTabCount + "]",
+//                    caption: "[" + g.displayTabCount + "] - " + label,
 //                    indicator: indicator,
                     icon: g.image
                 });
@@ -1226,9 +1231,9 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 let tab = group.tabArray[i];
                 let url = tab.linkedBrowser.contentDocument.location.href;
                 let indicator = " ";
-                if (i == group.selectedTab.dactylOrdinal-1)
+                if (tab._tPos == group.selectedTab._tPos)
                    indicator = "%"
-                else if (i == group.lastTab.dactylOrdinal-1)
+                else if (tabs.alternate && tab._tPos == tabs.alternate._tPos)
                    indicator = "#";
  
                 ret.push({
@@ -1300,20 +1305,27 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         },
         // Completion
         completion_group : function (context) {
-            filter = context.filter.toLowerCase();
+            let filter = context.filter.toLowerCase();
             context.anchored = false;
-            context.title = ['Group', '[Tab / Length] - Name'];
+            context.title = ['Group', 'Tab [Length]'];
             context.keys = { text: "text", description: "caption", icon: "icon" };
             context.compare = CompletionContext.Sort.number;
+//            context.pushProcessor(0, function (item, text, next) <>
+//                <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
+//                { next.call(this, item, text) }
+//            </>);
             context.completions = this.groupElements();
         },
         completion_groupTab : function (context) {
-            filter = context.filter.toLowerCase();
+            let filter = context.filter.toLowerCase();
             context.anchored = false;
-            context.title = ["Buffer", "URL"];
+            context.title = ["Group Buffers"];
             context.keys = { text: "text", description: "url", icon: "icon" };
             context.compare = CompletionContext.Sort.number;
-            //TODO show indicators
+            context.pushProcessor(0, function (item, text, next) <>
+                <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
+                { next.call(this, item, text) }
+            </>);
             context.completions = this.groupTabElements(undefined);
         },
        completion_groupedTab : function (context) {
@@ -1892,30 +1904,18 @@ group.commands.add(['tabattachtogroup'], 'Attach the current tab to another grou
         let count = args.count
         let arg = args.literalArg
 
-        if (count > 0)
+        if (count && count > 0)
             var index = dactyl.plugins.tabgroupsmanager.group(arg).index() + count
-        else if (/^\d+:.*$/.test(arg)) {
-            var index = dactyl.plugins.tabgroupsmanager.group(arg).index()
-        } else if (/^[-+]\d+$/.test(arg)) {
-            var index = dactyl.plugins.tabgroupsmanager.group(arg).index() + parseInt(arg)
-            if (index < 0) {
-                if (special)
-                    index = dactyl.plugins.tabgroupsmanager.groupCount() - 1
-                else
-                    index = 0
-            }
-            if (index > dactyl.plugins.tabgroupsmanager.groupCount() - 1) {
-                if (special)
-                    index = 0
-                else
-                    index = dactyl.plugins.tabgroupsmanager.groupCount() - 1
-            }
-        } else if (/^\d+$/.test(arg))
-            var index = parseInt(arg)
+        else if (/^\d+:.*$/.test(arg))
+            var index = dactyl.plugins.tabgroupsmanager.group(arg.replace(/\d+: /, "")).index()
+        else if (/^\d+$/.test(arg))
+            var index = parseInt(arg) - 1
         else
             var index = dactyl.plugins.tabgroupsmanager.group(arg).index()
+        
         dactyl.plugins.tabgroupsmanager.getGroupByIndex(index).attachTab(null)
-    }, {
+    },
+    {
         argCount: '?',
         bang: true,
         count: true,
@@ -2324,6 +2324,11 @@ if (groupAltKey) {
         { count: true });
 
     group.mappings.add(myModes, [groupAltKey + "s"],
+        "Sleep group",
+        function () { dactyl.plugins.tabgroupsmanager.group().suspend() },
+        { count: false });
+
+    group.mappings.add(myModes, [groupAltKey + "S"],
         "Sleep group",
         function () { dactyl.plugins.tabgroupsmanager.group().sleep() },
         { count: false });
