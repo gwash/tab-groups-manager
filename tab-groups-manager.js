@@ -365,8 +365,8 @@ var INFO = // {{{
     <description><p>Select <oa>count</oa>th or last group.</p></description>
     </item>
     <item>
-    <tags>:tabgroupbartoogle</tags>
-    <spec>:tabgroupbartoogle</spec>
+    <tags>:tabgroupbartoggle</tags>
+    <spec>:tabgroupbartoggle</spec>
     <description><p>Toogle group bar</p></description>
     </item>
     <item>
@@ -1560,7 +1560,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             TabGroupsManager.closedGroups.clear()
             this.endUpdate()
         },
-        toogleGroupBar : function(args) {
+        toggleGroupBar : function(args) {
             TabGroupsManager.groupBarDispHide.dispGroupBar = !TabGroupsManager.groupBarDispHide.dispGroupBar
             this.beginUpdate()
             this.endUpdate()
@@ -1668,6 +1668,7 @@ group.commands.add(['tabgroupc[reate]'], 'Create new group',
         literal: 0
     }, true);
 
+//FIXME can't handle keywords
 group.commands.add(['tabgroupo[pen]'], 'Open in new group',
     function(args){
         let arg = args.literalArg
@@ -1810,6 +1811,7 @@ group.commands.add(['tabgrouprel[oad]'], 'Reload group',
         literal: 0
     }, true);
 
+// TODO span completer 
 group.commands.add(['tabgroupm[ove]', 'tgm[ove]'], 'Move group',
     function(args){
         let count = args.count
@@ -2110,9 +2112,9 @@ group.commands.add(['tabgroupu[ndo]', 'tabgrouprestorel[ast]'], 'Restore last sl
         argCount: '0',
     }, true);
 
-group.commands.add(['tabgroupbartoogle'], 'Toogle group bar',
+group.commands.add(['tabgroupbartoggle'], 'Toogle group bar',
     function(args){
-        dactyl.plugins.tabgroupsmanager.toogleGroupBar()
+        dactyl.plugins.tabgroupsmanager.toggleGroupBar()
     }, {
         argCount: '0',
     }, true);
