@@ -1811,11 +1811,12 @@ group.commands.add(['tabgrouprel[oad]'], 'Reload group',
         literal: 0
     }, true);
 
-// TODO span completer 
+// TODO span completer
 group.commands.add(['tabgroupm[ove]', 'tgm[ove]'], 'Move group',
     function(args){
         let count = args.count
         let arg = args.literalArg
+        let gcount = parseInt(TabGroupsManager.allGroups.childNodes.length)
 
         if (count > 0)
             dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(count), false)
@@ -1823,10 +1824,12 @@ group.commands.add(['tabgroupm[ove]', 'tgm[ove]'], 'Move group',
             dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(arg), false)
         else if (/^\d+$/.test(arg))
         {
-            if (parseInt(arg) > TabGroupsManager.allGroups.childNodes.length -1|| parseInt(arg) < 0)
-                dactyl.echoerr("Index is greater ot less than allowed")
+            if (parseInt(arg) < 1)
+                dactyl.plugins.tabgroupsmanager.group('%').move(0, true)
+            else if (parseInt(arg) > gcount)
+                dactyl.plugins.tabgroupsmanager.group('%').move(gcount-1, true)
             else
-                dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(arg), true)
+                dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(arg-1), true)
         }
     }, {
         argCount: '?',

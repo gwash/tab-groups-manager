@@ -3,4 +3,5 @@
 [x] Fix completion matching
 [] Add a way to set group icon
 [] Selectively open tabs from sleeping groups
+[] Group sessions management
 [] code cleanup
