@@ -1903,6 +1903,7 @@ group.commands.add(['tabgroupbookmarka[ll]'], 'Bookmark all group',
         literal: 0
     }, true);
 
+// TODO create group if it doesn't exist
 group.commands.add(['tabattachtogroup'], 'Attach the current tab to another group',
     function(args){
         let special = args.bang;
@@ -1928,7 +1929,7 @@ group.commands.add(['tabattachtogroup'], 'Attach the current tab to another grou
         literal: 0
     }, true);
 
-/* //TODO needs a complete overhaul
+/* //FIXME needs a complete overhaul
 group.commands.add(['tabdetachtogroup'], 'Detach the current tab, and open it in its own group',
     function(args){
         let special = args.bang
@@ -1987,9 +1988,15 @@ group.commands.add(['tabdetachtogroup'], 'Detach the current tab, and open it in
 
 group.commands.add(['tabgrouprename'], 'Rename group',
     function(args){
-        dactyl.plugins.tabgroupsmanager.group('').setName(args.literalArg)
+        let special = args.bang;
+
+        if (special && args == "")
+            TabGroupsManager.allGroups.selectedGroup.autoRenameNameOnly()
+        else
+            dactyl.plugins.tabgroupsmanager.group('').setName(args.literalArg)
     }, {
         argCount: '?',
+        bang: true,
         literal: 0
     }, true);
 
@@ -2060,7 +2067,7 @@ group.commands.add(['tabgroupsu[spend]'], 'Suspend group',
         literal: 0,
     }, true);
 
-group.commands.add(['tabgroupunsu[spend]'], 'Unsuspend group',
+group.commands.add(['tabgroupunsu[spend]'], 'Restore suspended group',
     function(args){
         dactyl.plugins.tabgroupsmanager.group(args.literalArg).unsuspend()
     }, {
