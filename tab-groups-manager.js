@@ -32,13 +32,13 @@ THE POSSIBILITY OF SUCH DAMAGE.
 var INFO = // {{{
 <plugin name="tab-groups-manager" version="0.4"
         href=""
-        summary="for TabGroups Manager Addon"
-        xmlns="http://vimperator.org/namespaces/liberator">
+        summary="TabGroups Manager addon integration"
+        xmlns={NS}>
     <author email="mrawash@gmail.com">M Rawash</author>
     <license>New BSD License</license>
     <project name="Pentadactyl" minVersion="1.x"/>
     <p>
-        This plugin add some commands and mappings for extension TabGroups Manager.
+        This plugin add some commands and mappings for the TabGroups Manager addon.
     </p>
     <item>
     <tags>group-key</tags>
@@ -1206,18 +1206,20 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             var ret = []
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
+                let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
                 let label = "suspended"
+                let indicator = " "
+
                 if (!g.suspended)
                     label = g.selectedTab.label
-//                let indicator = " ";
-//                if (g == TabGroupsManager.allGroups.selectedGroup)
-//                    indicator = "%";
+
+                if (g == TabGroupsManager.allGroups.selectedGroup)
+                    indicator = "%";
 
                 ret.push({
                     text: i+1 + ": " + g.name,
-                    caption: label + " [" + g.displayTabCount + "]",
-//                    caption: "[" + g.displayTabCount + "] - " + label,
-//                    indicator: indicator,
+                    caption: "[" + count + "] " + label,
+                    indicator: indicator,
                     icon: g.image
                 });
              }
@@ -1265,13 +1267,16 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         sleepingGroupElements : function () {
             var ret = []
             for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
-                var g = TabGroupsManager.sleepingGroups.store[i]
+                let g = TabGroupsManager.sleepingGroups.store[i]
+                let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
+                let label = g.titleList.replace(/^\s*$/,"...")
+                
                 ret.push({
                     text: g.id + ": " + g.name,
-                    caption:  g.name + " - " + g.titleList,
+                    caption:  "[" + count + "] " + label ,
                     icon: g.image
-                 });
-                }
+                });
+            }
             return ret
         },
         suspendedGroupElements : function () {
@@ -1279,9 +1284,12 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
                 if (g.suspended) {
+                    let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
+                    let label = g.suspendTitleList.replace(/^\s*$/,"...")
+                 
                     ret.push({
                         text: g.id + ": " + g.name,
-                        caption:  g.name + " - " + g.suspendTitleList,
+                        caption:  "[" + count + "] " + label ,
                         icon: g.image
                     });
                 }
@@ -1291,12 +1299,15 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         closedGroupElements : function () {
             var ret = []
             for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
-                var g = TabGroupsManager.closedGroups.store[i]
+                let g = TabGroupsManager.closedGroups.store[i]
+                let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
+                let label = g.titleList.replace(/^\s*$/,"...")
+                
                 ret.push({
                     text: g.id + ": " + g.name,
-                    caption:  g.name + " - " + g.titleList,
+                    caption:  "[" + count + "] " + label ,
                     icon: g.image
-                 });
+                });
              }
             return ret
         },
@@ -1307,7 +1318,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         completion_group : function (context) {
             let filter = context.filter.toLowerCase();
             context.anchored = false;
-            context.title = ['Group', 'Tab [Length]'];
+            context.title = ['Group', '[Length] Tab'];
             context.keys = { text: "text", description: "caption", icon: "icon" };
             context.compare = CompletionContext.Sort.number;
 //            context.pushProcessor(0, function (item, text, next) <>
@@ -1338,7 +1349,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             context.anchored = false;
             context.keys = { text: "text", description: "caption", icon: "icon" };
             context.compare = CompletionContext.Sort.number;
-            context.title = [caption, 'Name - Title list'];
+            context.title = [caption, '[Length] Title list'];
             context.completions = dactyl.plugins.tabgroupsmanager[func].apply(dactyl.plugins.tabgroupsmanager, [])
         },
         completion_sleepingGroup : function (context){
