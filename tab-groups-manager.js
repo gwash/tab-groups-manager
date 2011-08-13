@@ -399,24 +399,6 @@ var INFO = // {{{
         </p>
     </description>
     </item>
-    <item>
-    <tags>:tabgroupriladd</tags>
-    <spec><oa>count</oa>:tabgroupriladd <oa>-type type</oa><oa>tag</oa></spec>
-    <description>
-        <p>
-            Open new group with <oa>count</oa> Read It Later items by <oa>tag</oa>. if <oa>count</oa> not given, open 10 items. if <oa>type</oa> not given, used pages type. if <oa>tag</oa> not given, used empty tag.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgrouprilupdate</tags>
-    <spec><oa>count</oa>:tabgrouprilupdate <oa>-type type</oa><oa>tag</oa></spec>
-    <description>
-        <p>
-           Reload current group with <oa>count</oa> Read It Later items by <oa>tag</oa>. if <oa>count</oa> not given, open 10 items. if <oa>type</oa> not given, used pages type. if <oa>tag</oa> not given, used empty tag.
-        </p>
-    </description>
-    </item>
 </plugin>; // }}}
 
 var PLUGIN_INFO = //{{{
@@ -510,9 +492,6 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 get is_alterneted() {
                         return this.id == this.plugin.lastId
                 },
-                get isRIL () {
-                    return this.name.match(/^RIL/)
-                },
                 get name() {
                     if (this.id == -1)
                         return "undefined group"
@@ -595,8 +574,6 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 setName: function(value) {
                     this.beginUpdate()
                     this.originalItem.setName(value)
-                    if (this.isRIL)
-                        this.reload()
                     this.endUpdate()
                 },
                 selectTab: function(count) {
@@ -663,29 +640,11 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     return ret
                 },
                 reload: function() {
-                    if (this.name.match(/RIL/)) {
-                        let filter = ""
-                        let type = "pages"
-                        let count = 10
-                        if (this.name.match(/RIL\[([^:]*):([^:]*):([^:]*)\]/)) {
-                            filter = this.name.match(/RIL\[(.*):([^:]*):([^:]*)\]/)[1]
-                            type = this.name.match(/RIL\[([^:]*):([^:]*):([^:]*)\]/)[2]
-                            count = parseInt(this.name.match(/RIL\[([^:]*):([^:]*):([^:]*)\]/)[3])
-                        } else if (this.name.match(/RIL\[([^:]*):([^:]*)\]/)) {
-                            filter = this.name.match(/RIL\[(.*):([^:]*)\]/)[1]
-                            type = this.name.match(/RIL\[(.*):([^:]*)\]/)[2]
-                        } else
-                            filter = this.name.match(/RIL\[(.*)\]/)[1]
-                        this.plugin.reloadRILGroup(this.guid, filter, type, count)
-                        // dactyl.echomsg("count = " + count)
-                        dactyl.echomsg("Group `" + this.name + "' did reload from RIL.")
-                    } else {
-                        if (this.originalItem.reloadTabInGroup)
-                            this.withUpdateWithSourceGroup("reloadTabInGroup", [])
-                        else if (this.originalItem.reloadTabsInGroup)
-                            this.withUpdateWithSourceGroup("reloadTabsInGroup", [])
-                        dactyl.echomsg("Group `" + this.name + "' did reload.")
-                    }
+                    if (this.originalItem.reloadTabInGroup)
+                        this.withUpdateWithSourceGroup("reloadTabInGroup", [])
+                    else if (this.originalItem.reloadTabsInGroup)
+                        this.withUpdateWithSourceGroup("reloadTabsInGroup", [])
+                    dactyl.echomsg("Group `" + this.name + "' did reload.")
                 },
                 move: function(pos, abs) {
                     this.beginUpdate()
@@ -1383,20 +1342,22 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         },
         createGroup : function(a_urls, a_tabs, name, silent) {
             this.beginUpdate()
-            // dactyl.echo(a_urls.length)
             let count = 0
             if (name == "")
                 name = null
+
             if (a_tabs.length > 0)
                 var tab = tabs[0]
             else if (a_urls.length > 0)
                 var tab = gBrowser.addTab(a_urls[0])
             else
                 var tab = null
+
             if (silent)
                 var group = TabGroupsManager.allGroups.openNewGroup(tab, null, name, null)
             else
                 var group = TabGroupsManager.allGroups.openNewGroupActive(tab, null, name, null)
+
             // for (var i = ((a_tabs.length > 0) ? 0 : 1); i < a_urls.length; i++) {
             //     //if ((i == 0) && !silent) {
             //     //    dactyl.open(a_urls[i], dactyl.CURRENT_TAB)
@@ -1407,11 +1368,14 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             //     group.addTab(tab, false)
             //     count = count + 1
             // }
+
             if (a_urls)
                 count = count + this.groupLoadUrls(group, a_urls.slice((a_tabs.length > 0) ? 0 : 1))
+
             for (var i = 1; i < a_tabs.length; i++) {
                 group.attachTab(a_tabs[i])
             }
+
             dactyl.echomsg("Create group with name `" + group.name + "'")
             this.endUpdate()
         },
@@ -1595,48 +1559,6 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 }
             this.endUpdate()
         },
-        rilPagesUrls : function(filter) {
-            return RIL.APP.filterList('pages', filter, RIL).reverse().map(function(el)
-                        el.url
-            );
-        },
-        rilCurrentUrls : function(filter) {
-            return RIL.APP.filterList('current', filter, RIL).reverse().map(function(el)
-                        el.url
-            );
-        },
-        addRILGroup : function(a_filter, silent, type, count) {
-            // let a_urls = RIL.APP.filterList('pages', filter.toLowerCase(), RIL).reverse().slice(0, 10).map(function(el)
-            //             el.url
-            // );
-            let type = (type || "pages")
-            let count = (count || 10)
-            let filter = (a_filter || "").toLowerCase()
-            let a_urls = this.rilPagesUrls(filter).slice(0, count)
-            this.createGroup(a_urls, [], "RIL[" + filter + ":" + type  + ":" + count +"]" , silent)
-        },
-        reloadRILGroup : function(a_group, a_filter, a_type, a_count) {
-            let filter = (a_filter || "").toLowerCase()
-            let count = (a_count || 10)
-            if (!a_type || (a_type == "pages"))
-                var a_urls = this.rilPagesUrls(filter).slice(0, count)
-            else if (a_type == "current")
-                var a_urls = this.rilCurrentUrls(filter).slice(0, count)
-            else
-                return
-            this.group(a_group || "").reloadUrls(a_urls)
-//            let g = this.getGroupByArgs(a_group || "")
-//            if (a_urls.length == 0)
-//                return
-//            for (var i = g.tabArray.length - 1; i > 0; i--) {
-//                let el = g.tabArray[i]
-//                // g.removeTab(el)
-//                // g.unlink(el)
-//                tabs.remove(el)
-//            }
-//            dactyl.open(a_urls[0])
-//            this.groupLoadUrls(g, a_urls.slice(1))
-        }
         // }}}
     }
     // Return plugin module
@@ -2147,51 +2069,6 @@ group.commands.add(['tabgroupsort'], 'Sort groups',
     }, {
         argCount: '0',
     }, true);
-
-if (window.RIL != undefined) {
-    group.commands.add(['groupopenrilpin'], 'Add RIL pin group',
-        function(args){
-            TabGroupsManager.allGroups.openNewGroupActive(null, null, null, null)
-            RIL.APP.filterList('current', 'pin', RIL).map(function(el)
-                dactyl.open(el.url, dactyl.NEW_TAB)
-                )
-            TabGroupsManager.groupBarDispHide.dispGroupBar = false
-        }, {
-            argCount: '0',
-        }, true);
-
-    group.commands.add(['groupriladd'], 'Add RIL group',
-        function(args){
-            let count = args.count
-            let arg = args.literalArg
-            let special = args.bang
-            let type = args['-type']
-
-            dactyl.plugins.tabgroupsmanager.addRILGroup(arg, special, type, count)
-        }, {
-            argCount: '1',
-            bang: true,
-            count: true,
-            options: [[["-type", "-t"], commands.OPTION_STRING]],
-            literal: 0
-        }, true);
-
-    group.commands.add(['grouprilupdate'], 'Update group from RIL',
-        function(args){
-            let count = args.count
-            let special = args.bang
-            let arg = args.literalArg
-            let type = args['-type']
-
-            dactyl.plugins.tabgroupsmanager.reloadRILGroup(arg, type, count)
-        }, {
-            argCount: '1',
-            bang: true,
-            count: true,
-            options: [[["-type", "-t"], commands.OPTION_STRING]],
-            literal: 0
-        }, true);
-}
 
 // }}}
 
