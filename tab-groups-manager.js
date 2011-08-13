@@ -1166,20 +1166,14 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
                 let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
-                let label = "suspended"
-                let indicator = " "
-
-                if (!g.suspended)
-                    label = g.selectedTab.label
-
-                if (g == TabGroupsManager.allGroups.selectedGroup)
-                    indicator = "%";
+                let label = !g.suspended ? g.selectedTab.label : "suspened"
+                let indicator = (g==TabGroupsManager.allGroups.selectedGroup) ? "%" : " "
 
                 ret.push({
                     text: i+1 + ": " + g.name,
                     caption: "[" + count + "] " + label,
                     indicator: indicator,
-                    icon: g.image
+                    icon: g.image!="" ? g.image : g.selectedTab ? g.selectedTab.image : "" 
                 });
              }
             return ret
@@ -1192,6 +1186,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 let tab = group.tabArray[i];
                 let url = tab.linkedBrowser.contentDocument.location.href;
                 let indicator = " ";
+
                 if (tab._tPos == group.selectedTab._tPos)
                    indicator = "%"
                 else if (tabs.alternate && tab._tPos == tabs.alternate._tPos)
@@ -1744,29 +1739,33 @@ group.commands.add(['tabgrouprel[oad]'], 'Reload group',
         literal: 0
     }, true);
 
-// TODO span completer
 group.commands.add(['tabgroupm[ove]', 'tgm[ove]'], 'Move group',
     function(args){
         let count = args.count
         let arg = args.literalArg
-        let gcount = parseInt(TabGroupsManager.allGroups.childNodes.length)
+        let gcount = TabGroupsManager.allGroups.childNodes.length
 
         if (count > 0)
-            dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(count), false)
+            dactyl.plugins.tabgroupsmanager.group('%').move(count, false)
         else if (/^[-+]\d+$/.test(arg))
             dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(arg), false)
-        else if (/^\d+$/.test(arg))
-        {
+        else if (/^\d+$/.test(arg)) {
             if (parseInt(arg) < 1)
                 dactyl.plugins.tabgroupsmanager.group('%').move(0, true)
             else if (parseInt(arg) > gcount)
                 dactyl.plugins.tabgroupsmanager.group('%').move(gcount-1, true)
             else
                 dactyl.plugins.tabgroupsmanager.group('%').move(parseInt(arg-1), true)
-        }
-    }, {
+            } else {
+                let g = dactyl.plugins.tabgroupsmanager.group(arg.replace(/^\d+: /,""))
+            
+                if (g.id > 0)
+                    dactyl.plugins.tabgroupsmanager.group('%').move(g.index(), true)
+            }
+        }, {
         argCount: '?',
         count: true,
+        completer: function (context) dactyl.plugins.tabgroupsmanager.completion_group(context),
         literal: 0
     }, true);
 
@@ -1836,87 +1835,54 @@ group.commands.add(['tabgroupbookmarka[ll]'], 'Bookmark all group',
         literal: 0
     }, true);
 
-// TODO create group if it doesn't exist
-group.commands.add(['tabattachtogroup'], 'Attach the current tab to another group',
+group.commands.add(['tabattachtog[roup]'], 'Attach the current tab to another group',
     function(args){
         let special = args.bang;
-        let count = args.count
         let arg = args.literalArg
 
-        if (count && count > 0)
-            var index = dactyl.plugins.tabgroupsmanager.group(arg).index() + count
-        else if (/^\d+:.*$/.test(arg))
-            var index = dactyl.plugins.tabgroupsmanager.group(arg.replace(/\d+: /, "")).index()
-        else if (/^\d+$/.test(arg))
-            var index = parseInt(arg) - 1
-        else
-            var index = dactyl.plugins.tabgroupsmanager.group(arg).index()
+        if (arg) {
+            if (/^\d+:.*$/.test(arg))
+                var group = dactyl.plugins.tabgroupsmanager.group(arg.replace(/\d+: /, ""))
+            else if (/^\d+$/.test(arg))
+                var group = dactyl.plugins.tabgroupsmanager.getGroupByIndex(parseInt(arg)-1)
+            else
+                var group = dactyl.plugins.tabgroupsmanager.group(arg)
         
-        dactyl.plugins.tabgroupsmanager.getGroupByIndex(index).attachTab(null)
+            if (group.id)
+                group.attachTab(null)
+            else
+                dactyl.echoerr("E: Group `" + arg + "' not found");
+
+
+        } else if (special)
+            TabGroupsManager.allGroups.moveTabToGroupInSameWindow(gBrowser.mCurrentTab)
     },
     {
         argCount: '?',
         bang: true,
-        count: true,
+        count: false,
         completer: function (context) dactyl.plugins.tabgroupsmanager.completion_group(context),
         literal: 0
     }, true);
 
-/* //FIXME needs a complete overhaul
-group.commands.add(['tabdetachtogroup'], 'Detach the current tab, and open it in its own group',
+group.commands.add(['tabdetachtog[roup]'], 'Detach the current tab, and open it in its own group',
     function(args){
         let special = args.bang
         let arg = args.literalArg
-        let name = args['-name']
-        let extended = args['-extended']
+        let tab = gBrowser.mCurrentTab
+        let group = null
 
-        if (arg) {
-            let tablist = []
-            let extracted = 0;
-            let matches = arg.match(/^(\d+):?/);
-            if (matches) {
-                tablist.push(tabs.getTab(parseInt(matches[1], 10) - 1));
-                extracted = 1;
-            } else {
-                let str = arg.toLowerCase();
-                let browsers = config.tabbrowser.browsers;
-                for (let i = browsers.length - 1; i >= 0; i--) {
-                    let host, title, uri = browsers[i].currentURI.spec;
-                    if (browsers[i].currentURI.schemeIs("about")) {
-                        host = "";
-                        title = "(Untitled)";
-                    } else {
-                        host = browsers[i].currentURI.host;
-                        title = browsers[i].contentTitle;
-                    }
-                    [host, title, uri] = [host, title, uri].map(String.toLowerCase);
-                    if (host.indexOf(str) >= 0 ||
-                        uri == str ||
-                        extended &&
-                        (title.indexOf(str) >= 0 || uri.indexOf(str) >= 0)) {
-                        tablist.push(tabs.getTab(i));
-                        extracted++;
-                    }
-                }
-            }
-            if (extracted > 0) {
-                dactyl.plugins.tabgroupsmanager.createGroup([], tablist, name, special)
-                dactyl.echomsg(extracted + " fewer tab(s)", 9);
-            } else {
-                dactyl.echoerr("E94: No matching tab for " + arg);
-            }
-        } else {
-            let tab = TabGroupsManager.allGroups.selectedGroup.selectedTab
-            dactyl.plugins.tabgroupsmanager.createGroup([], tab, name, special)
-        }
+        if (arg!="")
+            group = TabGroupsManager.allGroups.openNewGroupCore(null,arg)
+        
+        TabGroupsManager.allGroups.moveTabToGroupInSameWindow(tab,group,special)
     }, {
         argCount: '?',
         bang: true,
-        completer: function (context) completion.buffer(context),
-        options: [[["-name", "-n"], commands.OPTION_STRING], [["-extended", "-e"], commands.OPTION_NOARG]],
+        count: false,
         literal: 0
     }, true);
-*/
+
 //options: [[["-group", "-g"], commands.OPTION_STRING, null, dactyl.plugins.tabgroupsmanager.groupElements]],
 
 group.commands.add(['tabgrouprename'], 'Rename group',
@@ -2187,18 +2153,13 @@ if (groupAltKey) {
                 CommandExMode().open("tabgroupbuffer! ");
            // }
         });//, { count: true });
-    //FIXME DISASTROUS 
     group.mappings.add(myModes, [groupAltKey + "<"],
         "Move group to left",
-        //function () { dactyl.plugins.tabgroupsmanager.group("").move("-1") });
-        function() {CommandExMode().open("tabgroupmove -1")}
-    );
+        function () { dactyl.plugins.tabgroupsmanager.group("%").move(-1) });
 
     group.mappings.add(myModes, [groupAltKey + ">"],
         "Move group to right",
-        //function () { dactyl.plugins.tabgroupsmanager.group("").move("+1") });
-        function() {CommandExMode().open("tabgroupmove +1")}
-    );
+        function () { dactyl.plugins.tabgroupsmanager.group("%").move(1) });
     
     group.mappings.add(myModes, [groupAltKey + "B"],
         "Show group tabs",
