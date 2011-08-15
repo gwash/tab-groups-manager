@@ -672,44 +672,42 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     this.endUpdate()
                 },
                 unsuspend: function(){
-                    if (this.id == -1 )
-                        return false;
-                    return this.withUpdateWithSourceGroup("unsuspendGroup", [])
+                    if (this.id!=-1 ) {
+                        this.withUpdateWithSourceGroup("unsuspendGroup", [])
+                        return this
+                    } else
+                        return false
                 },   
                 unsleep: function(){
-                    if (this.id == -1)
-                        return false;
-                    this.beginUpdate()
-                    return TabGroupsManager.sleepingGroups.restoreGroup(this.id)
-                    this.endUpdate()
-                    // TODO uncomment. by mapping.
-                    // if (ret)
-                    //     dactyl.echomsg('restored group with name ' + this.name, 9);
-                    // else
-                    //     dactyl.echoerr('group not restored');
-                    return this
+                    if (this.id!=-1) {
+                        this.beginUpdate()
+                        TabGroupsManager.sleepingGroups.restoreGroup(this.id)
+                        this.endUpdate()
+                        return this
+                    } else
+                        return false
                 },
                 unclose: function(){
-                    if (this.id == -1)
-                        return false;
-                    this.beginUpdate()
-                    return TabGroupsManager.closedGroups.restoreGroup(this.id)
-                    this.endUpdate()
-                    // if (ret)
-                    //     dactyl.echomsg('restored group with name ' + this.name, 9);
-                    // else
-                    //     dactyl.echoerr('group not restored');
-                    return this
+                    if (this.id!=-1) {
+                        this.beginUpdate()
+                        TabGroupsManager.closedGroups.restoreGroup(this.id)
+                        this.endUpdate()
+                        return this
+                    } else
+                        return false  
                 },
                 restore: function(){
-                    this.beginUpdate()
-                    let ret = this.unsuspend() || this.unsleep() || this.unclose()
-                    this.endUpdate()
-                    if (ret)
-                         dactyl.echomsg('restored group with name ' + this.name, 9);
-                    else
-                         dactyl.echoerr('group not restored');
-                    return ret
+                    let type = plugins.tabgroupsmanager.groups.itemTypeById(this.id)
+                    switch (type){
+                        case "normal":
+                            return this.unsuspend()
+                        case "sleeping":
+                            return this.unsleep()
+                        case "closed":
+                            return this.unclose()
+                        default:
+                            return false
+                     }
                 },
                 duplicate : function (count) {
                     let urls = this.urls
@@ -1936,12 +1934,12 @@ group.commands.add(['tabgroupunsu[spend]'], 'Restore suspended group',
 group.commands.add(['tabgroupr[estore]'], 'Restore group',
     function(args){
         let special = args.bang
-        let ret = dactyl.plugins.tabgroupsmanager.restorableGroup(args.literalArg).restore()
+        let res = dactyl.plugins.tabgroupsmanager.restorableGroup(args.literalArg).restore()
 
-        if (ret) {
+        if (res) {
             if (!special)
-                ret.select()
-            dactyl.echomsg("restored group with name `" + ret.name + "'", 9);
+                res.select()
+            dactyl.echomsg("restored group with name `" + res.name + "'");
         } else
             dactyl.echoerr("group not restored");
     }, {
