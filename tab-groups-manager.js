@@ -401,41 +401,6 @@ var INFO = // {{{
     </item>
 </plugin>; // }}}
 
-var PLUGIN_INFO = //{{{
-<VimperatorPlugin>
-  <name>Tab Grops Manager Plugin</name>
-  <description>Plugin for extension |TabGroups Manager| - https://addons.mozilla.org/ru/firefox/addon/10254</description>
-  <version>0.2</version>
-  <author mail="coldwarmhot@yandex.ru" homepage="">coldwarmhot</author>
-  <minVersion>2.2</minVersion>
-  <maxVersion>2.4</maxVersion>
-  <updateURL></updateURL>
-  <license>new BSD License (Please read the source code comments of this plugin)</license>
-  <require><![CDATA[
-    + TabGroups Manager "extension" https://addons.mozilla.org/ru/firefox/addon/10254
-  ]]></require>
-  <detail><![CDATA[
-    == Requires ==
-       extension TabGroups Manager
-
-      === Default ===
-        options.tabgroupsmanager_group_key = 'x'
-        options.tabgroupsmanager_group_alt_key = 'v'
-
-    == Example ==
-      === Close group ===
-        >||
-          :tabgroupclose 14: group name
-        ||<
-        Close group by id equal 14
-
-    == TODO ==
-
-  ]]></detail>
-</VimperatorPlugin>; //}}}
-
-
-
 if (window.TabGroupsManager != undefined) { (function () {
 
 // ---------------------------
@@ -1539,7 +1504,6 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             this.beginUpdate()
                 let action = function () {
                     if (special) {
-                        //TabGroupsManager.closedGroups.restoreGroup(TabGroupsManager.closedGroups.store[TabGroupsManager.closedGroups.store.length - 1].id)
                         TabGroupsManager.closedGroups.restoreLatestGroup()
                     } else {
                         TabGroupsManager.sleepingGroups.restoreLatestGroup()
@@ -1549,9 +1513,8 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 if (count) {
                     for (var i = 0; i < count; i++)
                         action()
-                } else {
-                        action()
-                }
+                } else
+                    action()
             this.endUpdate()
         },
         // }}}
@@ -2152,14 +2115,25 @@ if (groupAltKey) {
            // } else {
                 CommandExMode().open("tabgroupbuffer! ");
            // }
-        });//, { count: true });
+        }
+    );//, { count: true });
     group.mappings.add(myModes, [groupAltKey + "<"],
         "Move group to left",
-        function () { dactyl.plugins.tabgroupsmanager.group("%").move(-1) });
+        function ({count}) {
+            if (!count)
+                count = 1; 
+            
+            dactyl.plugins.tabgroupsmanager.group("%").move(-count)
+        }, {count: true});
 
     group.mappings.add(myModes, [groupAltKey + ">"],
         "Move group to right",
-        function () { dactyl.plugins.tabgroupsmanager.group("%").move(1) });
+        function ({count}) {
+            if (!count)
+                count = 1; 
+            
+            dactyl.plugins.tabgroupsmanager.group("%").move(count)
+        }, {count: true});
     
     group.mappings.add(myModes, [groupAltKey + "B"],
         "Show group tabs",
@@ -2193,11 +2167,11 @@ if (groupAltKey) {
         "Sleep group",
         function () { dactyl.plugins.tabgroupsmanager.group().sleep() },
         { count: false });
-
+    //FIXME
     group.mappings.add(myModes, [groupAltKey + "u"],
         "Undo close last group",
         function (count) { dactyl.plugins.tabgroupsmanager.restoreGroup(true, count) });
-
+    //FIXME
     group.mappings.add(myModes, [groupAltKey + "U"],
         "Restore group",
         function () {
