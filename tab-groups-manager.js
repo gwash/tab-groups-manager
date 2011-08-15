@@ -518,7 +518,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 },
                 withUpdate : function (action, obj, args) {
                     this.beginUpdate()
-                    let ret = action.apply(obj, args)
+                    let ret = action && action.apply(obj, args)
                     this.endUpdate()
                     return ret
                 },
@@ -643,10 +643,6 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     this.withUpdateWithSourceGroup("sleepGroup", [])
                 },
                 suspend: function() {
-                    if (this.id == -1) {
-                        dactyl.echoerr('nobody group not sleeping');
-                        return false;
-                    }
                     this.withUpdateWithSourceGroup("suspendGroup", [])
                 },
                 close: function(reverse) {
@@ -676,17 +672,15 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     this.endUpdate()
                 },
                 unsuspend: function(){
-                    if (this.id == -1) {
-                        dactyl.echoerr('nobody group not suspended');
+                    if (this.id == -1 )
                         return false;
-                    }
-                    this.withUpdateWithSourceGroup("unsuspendGroup", [])
+                    return this.withUpdateWithSourceGroup("unsuspendGroup", [])
                 },   
                 unsleep: function(){
                     if (this.id == -1)
                         return false;
                     this.beginUpdate()
-                    TabGroupsManager.sleepingGroups.restoreGroup(this.id)
+                    return TabGroupsManager.sleepingGroups.restoreGroup(this.id)
                     this.endUpdate()
                     // TODO uncomment. by mapping.
                     // if (ret)
@@ -699,7 +693,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     if (this.id == -1)
                         return false;
                     this.beginUpdate()
-                    TabGroupsManager.closedGroups.restoreGroup(this.id)
+                    return TabGroupsManager.closedGroups.restoreGroup(this.id)
                     this.endUpdate()
                     // if (ret)
                     //     dactyl.echomsg('restored group with name ' + this.name, 9);
@@ -711,10 +705,10 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     this.beginUpdate()
                     let ret = this.unsuspend() || this.unsleep() || this.unclose()
                     this.endUpdate()
-                    // if (ret)
-                    //     dactyl.echomsg('restored group with name ' + this.name, 9);
-                    // else
-                    //     dactyl.echoerr('group not restored');
+                    if (ret)
+                         dactyl.echomsg('restored group with name ' + this.name, 9);
+                    else
+                         dactyl.echoerr('group not restored');
                     return ret
                 },
                 duplicate : function (count) {
@@ -1032,6 +1026,13 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
 //                    }
 //                }
             } else if (type == 'restorable') {
+                for (var i = 0; i < TabGroupsManager.allGroups.length; i++) {
+                    let g = TabGroupsManager.allGroups.childNodes[i].group
+                    if (g.suspened){
+                        if (g.name.match(name))
+                            return g.id
+                    }
+                }
                 for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
                     if (TabGroupsManager.sleepingGroups.store[i].name.match(name)) {
                         return TabGroupsManager.sleepingGroups.store[i].id
@@ -1233,6 +1234,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         restorableGroupElements : function () {
             return this.suspendedGroupElements() + this.sleepingGroupElements() + this.closedGroupElements()
         },
+
         // Completion
         completion_group : function (context) {
             let filter = context.filter.toLowerCase();
@@ -1283,6 +1285,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         completion_restorableGroup : function (context){
             return dactyl.plugins.tabgroupsmanager.completion_inactiveGroup(context, 'Group', "restorableGroupElements")
         },
+
         // Group
         groupLoadUrls : function (group, a_urls) {
             if (!a_urls)
@@ -1500,21 +1503,13 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             this.beginUpdate()
             this.endUpdate()
         },
-        restoreGroup : function(special, count) {
+        restoreLatestGroup : function(special) {
             this.beginUpdate()
-                let action = function () {
-                    if (special) {
-                        TabGroupsManager.closedGroups.restoreLatestGroup()
-                    } else {
-                        TabGroupsManager.sleepingGroups.restoreLatestGroup()
-                    }
-                }
-                // TODO в одно действие
-                if (count) {
-                    for (var i = 0; i < count; i++)
-                        action()
-                } else
-                    action()
+            if (special) {
+                TabGroupsManager.closedGroups.restoreLatestGroup()
+            } else {
+                TabGroupsManager.sleepingGroups.restoreLatestGroup()
+            }
             this.endUpdate()
         },
         // }}}
@@ -1938,7 +1933,6 @@ group.commands.add(['tabgroupunsu[spend]'], 'Restore suspended group',
         literal: 0,
     }, true);
 
-
 group.commands.add(['tabgroupr[estore]'], 'Restore group',
     function(args){
         let special = args.bang
@@ -1977,7 +1971,7 @@ group.commands.add(['tabgroupclosedlistclear'], 'Clear group closed list',
 
 group.commands.add(['tabgroupu[ndo]', 'tabgrouprestorel[ast]'], 'Restore last sleeping or closed group',
     function(args){
-        dactyl.plugins.tabgroupsmanager.restoreGroup(args.bang, args.count)
+        dactyl.plugins.tabgroupsmanager.restoreLatestGroup(args.bang, args.count)
     }, {
         bang: true,
         count: true,
@@ -2006,27 +2000,12 @@ group.commands.add(['tabgroupsort'], 'Sort groups',
 // ---------------------------
 // {{{
 //var myModes = config.browserModes;
-// var groupKey = "x"
-// var groupAltKey = "v"
+//var groupKey = "x"
+//var groupAltKey = "v"
+
 var myModes = [modes.NORMAL]
 var groupKey = options.tabgroupsmanager_group_key
 var groupAltKey = options.tabgroupsmanager_group_alt_key
-
-//    group.mappings.add([modes.NORMAL], ["t"],
-//        "Open one or more URLs in a new tab",
-//        function () { commandline.open(":", "tabopen ", modes.EX); });
-//
-//    group.mappings.add([modes.NORMAL], ["T"],
-//        "Open one or more URLs in a new tab, based on current location",
-//        function () { commandline.open(":", "tabopen " + buffer.URL, modes.EX); });
-
-// group.mappings.add(myModes, ["U"],
-//     "Undo close last group",
-//     function (count) { dactyl.plugins.tabgroupsmanager.restoreGroup(true, count) });
-
-//group.mappings.add(myModes, ["U"],
-//    "Undo closing of a tab",
-//    function () { commandline.open(":", "undo " , modes.EX); });
 
 if (groupKey) {
     group.mappings.add(myModes, [groupKey],
@@ -2150,8 +2129,7 @@ if (groupAltKey) {
 
     group.mappings.add(myModes, [groupAltKey + "d"],
         "Close group",
-        function (count) { dactyl.plugins.tabgroupsmanager.group().closeAllTabsAndSelf() },
-        { count: true });
+        function () { dactyl.plugins.tabgroupsmanager.group().closeAllTabsAndSelf() });
 
     group.mappings.add(myModes, [groupAltKey + "D"],
         "Close group and select previous",
@@ -2167,26 +2145,21 @@ if (groupAltKey) {
         "Sleep group",
         function () { dactyl.plugins.tabgroupsmanager.group().sleep() },
         { count: false });
-    //FIXME
     group.mappings.add(myModes, [groupAltKey + "u"],
         "Undo close last group",
-        function (count) { dactyl.plugins.tabgroupsmanager.restoreGroup(true, count) });
-    //FIXME
+        function () { dactyl.plugins.tabgroupsmanager.restoreLatestGroup(true) });
+    
     group.mappings.add(myModes, [groupAltKey + "U"],
         "Restore group",
-        function () {
-            CommandExMode().open("tabgrouprestore! ");
-            });
+        function () { CommandExMode().open("tabgrouprestore! ") });
 
     group.mappings.add(myModes, [groupAltKey + "k", groupAltKey + "<Up>", groupAltKey + "0", groupAltKey + "^"],
         "Switch to first group",
-        function () { dactyl.plugins.tabgroupsmanager.selectFirstGroup() },
-        { });
+        function () { dactyl.plugins.tabgroupsmanager.selectFirstGroup() });
 
     group.mappings.add(myModes, [groupAltKey + "j", groupAltKey + "<Down>", groupAltKey + "$"],
         "Switch to last group",
-        function () { dactyl.plugins.tabgroupsmanager.selectLastGroup() },
-        { });
+        function () { dactyl.plugins.tabgroupsmanager.selectLastGroup() });
 
 //    group.mappings.add(myModes, ["[" + groupAltKey],
 //        "Switch to previous group",
