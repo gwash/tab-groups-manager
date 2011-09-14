@@ -1,6 +1,6 @@
 /* //{{{ 
 Copyright (c) 2010-2010, coldwarmhot.
-Copyright (c) 2011-2011, M Rawash <mrawash@gmail.com>
+Copyright (c) 2011, M Rawash <mrawash@gmail.com>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -536,9 +536,12 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     dactyl.focusContent()
                     return this
                 },
-                setName: function(value) {
+                setName: function(value, auto) {
                     this.beginUpdate()
-                    this.originalItem.setName(value)
+                    if (value=="" && auto)  
+                        TabGroupsManager.allGroups.selectedGroup.autoRenameNameOnly();
+                    else
+                        this.originalItem.setName(value)
                     this.endUpdate()
                 },
                 selectTab: function(count) {
@@ -1843,12 +1846,7 @@ group.commands.add(['tabdetachtog[roup]'], 'Detach the current tab, and open it 
 
 group.commands.add(['tabgrouprename'], 'Rename group',
     function(args){
-        let special = args.bang;
-
-        if (special && args == "")
-            TabGroupsManager.allGroups.selectedGroup.autoRenameNameOnly()
-        else
-            dactyl.plugins.tabgroupsmanager.group('').setName(args.literalArg)
+        dactyl.plugins.tabgroupsmanager.group('').setName(args.literalArg, args.bang)
     }, {
         argCount: '?',
         bang: true,
