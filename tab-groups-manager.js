@@ -1133,14 +1133,17 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
                 let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
-                let label = !g.suspended ? g.selectedTab.label : "suspened"
+                let label = !g.suspended ? g.selectedTab.label : "suspended - " + g.name
                 let indicator = (g==TabGroupsManager.allGroups.selectedGroup) ? "%" : " "
+                let image = g.image!="" ? g.image : g.selectedTab ? g.selectedTab.image : ""
 
                 ret.push({
                     text: i+1 + ": " + g.name,
-                    caption: "[" + count + "] " + label,
+                    description: label,
+                    tabcount: count,
                     indicator: indicator,
-                    icon: g.image!="" ? g.image : g.selectedTab ? g.selectedTab.image : "" 
+                    icon: image,
+                    command: "top.dactyl.plugins.tabgroupsmanager.group('" + g.name + "').select()" 
                 });
              }
             return ret
@@ -1163,7 +1166,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                     text: [i+1 + ": " + (tab.label || "(Untitled)"), i+1 + ": " + url],
                     url:  template.highlightURL(url),
                     indicator: indicator,
-                    icon: tab.image || DEFAULT_FAVICON
+                    icon: tab.image || BookmarkCache.DEFAULT_FAVICON
                 });
             }
             return ret
@@ -1177,7 +1180,7 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
                 for (var j = 0; j < group.tabArray.length; j++) {
                     let tab = group.tabArray[j]
                     let guid = (tab._tPos + 1) + ": "+ tab.label
-                    let caption = group.name + " - " +  tab.linkedBrowser.contentDocument.location.href
+                    let caption = group.name + " - " +  template.highlightURL(tab.linkedBrowser.contentDocument.location.href)
                     let el = [guid, caption]
                     el.icon = tab.image
                     ret.push(el)
@@ -1190,12 +1193,14 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
                 let g = TabGroupsManager.sleepingGroups.store[i]
                 let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
-                let label = g.titleList.replace(/^\s*$/,"...")
+                let label = g.titleList.replace(/^\s*$/,g.name)
                 
                 ret.push({
                     text: g.id + ": " + g.name,
-                    caption:  "[" + count + "] " + label ,
-                    icon: g.image
+                    description: label,
+                    tabcount: count,
+                    icon: g.image,
+                    command: "top.dactyl.plugins.tabgroupsmanager.restorableGroup('" + g.name + "').unsleep().select()" 
                 });
             }
             return ret
@@ -1204,16 +1209,19 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             var ret = []
             for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
                 let g = TabGroupsManager.allGroups.childNodes.item(i).group
-                if (g.suspended) {
-                    let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
-                    let label = g.suspendTitleList.replace(/^\s*$/,"...")
+                
+                if (!g.suspended) continue;
+                
+                let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
+                let label = g.suspendTitleList.replace(/^\s*$/,g.name)
                  
-                    ret.push({
-                        text: g.id + ": " + g.name,
-                        caption:  "[" + count + "] " + label ,
-                        icon: g.image
-                    });
-                }
+                ret.push({
+                    text: g.id + ": " + g.name,
+                    description: label,
+                    tabcount: count,
+                    icon: g.image,
+                    command: "top.dactyl.plugins.tabgroupsmanager.group('" + g.name + "').select()" 
+                });
             }
             return ret
         },
@@ -1222,12 +1230,14 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
                 let g = TabGroupsManager.closedGroups.store[i]
                 let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
-                let label = g.titleList.replace(/^\s*$/,"...")
+                let label = g.titleList.replace(/^\s*$/,g.name)
                 
                 ret.push({
                     text: g.id + ": " + g.name,
-                    caption:  "[" + count + "] " + label ,
-                    icon: g.image
+                    description: label,
+                    tabcount: count,
+                    icon: g.image,
+                    command: "top.dactyl.plugins.tabgroupsmanager.restorableGroup('" + g.name + "').unclose().select()" 
                 });
              }
             return ret
@@ -1236,17 +1246,30 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
             return this.suspendedGroupElements() + this.sleepingGroupElements() + this.closedGroupElements()
         },
 
+        groupDescription: function (item, text)
+        <>
+            <span>[{item.tabc}] <span highlight="URL" onclick={item.command}>{text}</span></span>
+        </>,
+
         // Completion
         completion_group : function (context) {
             let filter = context.filter.toLowerCase();
             context.anchored = false;
             context.title = ['Group', '[Length] Tab'];
-            context.keys = { text: "text", description: "caption", icon: "icon" };
+            context.keys = {
+                text: "text",
+                description: "description",
+                tabc: "tabcount",
+                indicator: "indicator",
+                icon: "icon", 
+                command: "command" 
+            };
             context.compare = CompletionContext.Sort.number;
 //            context.pushProcessor(0, function (item, text, next) <>
 //                <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
 //                { next.call(this, item, text) }
 //            </>);
+            context.process[1] = function (item, text) plugins.tabgroupsmanager.groupDescription(item, text);
             context.completions = this.groupElements();
         },
         completion_groupTab : function (context) {
@@ -1269,9 +1292,16 @@ dactyl.plugins.tabgroupsmanager = (function(){ //{{{
         completion_inactiveGroup : function (context, caption, func){
             filter = context.filter.toLowerCase();
             context.anchored = false;
-            context.keys = { text: "text", description: "caption", icon: "icon" };
-            context.compare = CompletionContext.Sort.number;
             context.title = [caption, '[Length] Title list'];
+            context.keys = {
+                text: "text",
+                description: "description",
+                tabc: "tabcount",
+                icon: "icon", 
+                command: "command" 
+            };
+            context.compare = CompletionContext.Sort.number;
+            context.process[1] = function (item, text) plugins.tabgroupsmanager.groupDescription(item, text);
             context.completions = dactyl.plugins.tabgroupsmanager[func].apply(dactyl.plugins.tabgroupsmanager, [])
         },
         completion_sleepingGroup : function (context){
@@ -2147,7 +2177,7 @@ if (groupAltKey) {
     
     group.mappings.add(myModes, [groupAltKey + "U"],
         "Restore group",
-        function () { CommandExMode().open("tabgrouprestore! ") });
+        function () { CommandExMode().open("tabgrouprestore ") });
 
     group.mappings.add(myModes, [groupAltKey + "k", groupAltKey + "<Up>", groupAltKey + "0", groupAltKey + "^"],
         "Switch to first group",
