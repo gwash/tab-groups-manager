@@ -2017,37 +2017,15 @@ group.mappings.add([modes.NORMAL], ["vv"],
         }
     }, { count: true });
 
-group.mappings.add([modes.NORMAL], ["v<Left>", "vh"],
+group.mappings.add([modes.NORMAL], ["v<Left>", "gV"],
     "Switch to previous group",
     function (count) { selectPreviousGroup(count) },
     { count: true });
 
-group.mappings.add([modes.NORMAL], ["v<Right>", "vl"],
+group.mappings.add([modes.NORMAL], ["v<Right>", "gv"],
     "Switch to next group",
     function (count) { selectNextGroup(count); },
     { count: true });
-
-//FIXME
-group.mappings.add([modes.NORMAL], ["gV"],
-    "Switch to previous finded group",
-    function (count) {
-        if (count) {
-            getGroupByIndex(count - 1).select()
-        } else {
-            selectGroupByName(lastFilter, true, true)
-        }
-    }, { count: true });
-
-//FIXME
-group.mappings.add([modes.NORMAL], ["gv"],
-    "Switch to next finded group",
-    function (count) {
-        if (count && count < 0) {
-            getGroupByIndex(count - 1).select()
-        } else {
-            selectGroupByName(lastFilter, true, false)
-        }
-    }, { count: true });
 
 group.mappings.add([modes.NORMAL], ["vt"],
     "Group tabopen",
