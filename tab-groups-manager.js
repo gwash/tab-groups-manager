@@ -955,7 +955,7 @@ function updateTabCount() {
     if (dactyl.has("tabs")) {
         let tabCountWidget = document.getElementById("dactyl-statusline-field-tabcount");
         tabCountWidget.value = groups.caption
-        }
+    }
 }
 // Indices
 function hasIndex(index) {
@@ -1996,17 +1996,6 @@ group.mappings.add([modes.NORMAL], ["X"],
     "Open one or more URLs in a new group, based on current location",
     function () { CommandExMode().open("tabgroupopen " + buffer.URL, modes.EX); });
 
-// TODO count reaction and move to class
-group.mappings.add([modes.NORMAL], ["[x", "gX"],
-    "Switch to previous group",
-    function (count) { selectPreviousGroup(count) },
-    { count: true });
-
-group.mappings.add([modes.NORMAL], ["]x", "gx"],
-    "Switch to next group",
-    function (count) { selectNextGroup(count); },
-    { count: true });
-
 group.mappings.add([modes.NORMAL], ["vv"],
     "Go to the specified group from the group list.",
     function (count) {
@@ -2016,16 +2005,6 @@ group.mappings.add([modes.NORMAL], ["vv"],
             CommandExMode().open("tabgroup! ");
         }
     }, { count: true });
-
-group.mappings.add([modes.NORMAL], ["v<Left>", "gV"],
-    "Switch to previous group",
-    function (count) { selectPreviousGroup(count) },
-    { count: true });
-
-group.mappings.add([modes.NORMAL], ["v<Right>", "gv"],
-    "Switch to next group",
-    function (count) { selectNextGroup(count); },
-    { count: true });
 
 group.mappings.add([modes.NORMAL], ["vt"],
     "Group tabopen",
@@ -2052,23 +2031,6 @@ group.mappings.add([modes.NORMAL], ["vb"],
        // }
     }
 );//, { count: true });
-group.mappings.add([modes.NORMAL], ["v<"],
-    "Move group to left",
-    function ({count}) {
-        if (!count)
-            count = 1; 
-        
-        getGroup("%").move(-count)
-    }, {count: true});
-
-group.mappings.add([modes.NORMAL], ["v>"],
-    "Move group to right",
-    function ({count}) {
-        if (!count)
-            count = 1; 
-        
-        getGroup("%").move(count)
-    }, {count: true});
 
 group.mappings.add([modes.NORMAL], ["vB"],
     "Show group tabs",
@@ -2109,13 +2071,43 @@ group.mappings.add([modes.NORMAL], ["vU"],
     "Restore group",
     function () { CommandExMode().open("tabgrouprestore ") });
 
-group.mappings.add([modes.NORMAL], ["vk", "v<Up>", "v0", "v^"],
+// TODO count reaction and move to class
+group.mappings.add([modes.NORMAL], ["v<Left>", "vh", "gV", "gX"],
+    "Switch to previous group",
+    function (count) { selectPreviousGroup(count) },
+    { count: true });
+
+group.mappings.add([modes.NORMAL], ["v<Right>", "vl", "gv", "gx"],
+    "Switch to next group",
+    function (count) { selectNextGroup(count); },
+    { count: true });
+
+group.mappings.add([modes.NORMAL], ["v<Up>", "vk", "v^"],
     "Switch to first group",
     function () { selectFirstGroup() });
 
-group.mappings.add([modes.NORMAL], ["vj", "v<Down>", "v$"],
+group.mappings.add([modes.NORMAL], ["v<Down>", "vj", "v$"],
     "Switch to last group",
     function () { selectLastGroup() });
+
+group.mappings.add([modes.NORMAL], ["v<"],
+    "Move group to left",
+    function ({count}) {
+        if (!count)
+            count = 1; 
+        
+        getGroup("%").move(-count)
+    }, {count: true});
+
+group.mappings.add([modes.NORMAL], ["v>"],
+    "Move group to right",
+    function ({count}) {
+        if (!count)
+            count = 1; 
+        
+        getGroup("%").move(count)
+    }, {count: true});
+
 // }}}
 
 // ---------------------------
