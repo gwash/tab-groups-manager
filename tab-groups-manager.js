@@ -894,54 +894,6 @@ Groups = (function(){ // {{{
     return cl;
 })() //}}}
 
-BrowserObjectGroup = (function(){ // {{{
-    function BOGroup(){}
-    BOGroup.prototype = {
-        close: function(ary){
-            for (var i = 0 ; i < ary.length; i++){
-                let j = ary[i];
-                window.setTimeout(function(){ j.group.closeAllTabsAndGroup(); },0);
-            }
-        },
-        yank: function(ary){
-            var copyStrings = [];
-            for (var i = 0 ; i < ary.length; i++)
-                if(typeof ary[i] == "object")
-                    copyStrings.push(ary[i].group.name);
-            dactyl.modules.util.copyToClipboard(copyStrings.join(", "));
-        },
-        mark: function(ary,arg){
-            var markStrings = [];
-            for (var i = 0 ; i < ary.length; i++)
-                if(typeof ary[i] == "object") {
-                    markStrings.push(ary[i].linkedBrowser.contentDocument.location.href);
-                    for (var j = 0; j < ary[i].group.tabArray.length; j++) {
-                        markStrings.push(ary[i].group.tabArray[j].linkedBrowser.contentDocument.location.href);
-                    }
-                }
-            dactyl.modules.quickmarks.add(arg,markStrings.join(", "));
-        },
-        reload: function(ary){
-            for (var i = 0 ; i < ary.length; i++)
-                if(typeof ary[i] == "object")
-                    ary[i].group.reloadTabInGroup()
-        },
-        //
-        active: function() selectedIndex(),
-        identify: function(i){try{return i.group.selectedTab.linkedBrowser.contentDocument.location.host}catch(e){}},
-        href: function(i){try{return i.group.selectedTab.linkedBrowser.contentDocument.location.href}catch(e){}},
-        title: function(i){try{return i.group.selectedTab.linkedBrowser.contentDocument.title}catch(e){}},
-        pinned: function(i){
-            if(typeof i == "object"){
-                return i.group.selectedTab.linkedBrowser.vimperatorBrowserObjectPin
-            }
-            return false;
-        },
-        collection: function() groups.getItemsByFilter("").map(function(el) el.originalItem)
-    };
-    return BOGroup;
-})() //}}}
-
 // Methods // {{{
 // Update
 function beginUpdate() {
