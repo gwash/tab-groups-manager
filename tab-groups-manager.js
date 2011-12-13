@@ -1446,7 +1446,7 @@ function bookmarkAllGroups(folder) {
     TabGroupsManager.allGroups.bookmarkAllGroups(folder)
     endUpdate()
 }
-function clearGroupClosedList(args) {
+function clearClosedGroupsList(args) {
     beginUpdate()
     TabGroupsManager.closedGroups.clear()
     endUpdate()
@@ -1902,9 +1902,9 @@ group.commands.add(['tabgroupr[estore]'], 'Restore group',
         literal: 0
     }, true);
 
-group.commands.add(['tabgroupclosedlistclear'], 'Clear group closed list',
+group.commands.add(['tabgroupcl[earclosedlist]'], 'Clear closed groups list',
     function(args){
-        clearGroupClosedList()
+        clearClosedGroupsList()
     }, {
         argCount: '0',
     }, true);
