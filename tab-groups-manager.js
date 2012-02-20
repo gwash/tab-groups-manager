@@ -1,2073 +1,1598 @@
-/* //{{{ 
-Copyright (c) 2010-2010, coldwarmhot.
-Copyright (c) 2011, M Rawash <mrawash@gmail.com>
-All rights reserved.
+/* 
+Copyright (c) 2011-2012, M Rawash <mrawash@gmail.com>
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    1. Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright notice,
-       this list of conditions and the following disclaimer in the documentation
-       and/or other materials provided with the distribution.
-    3. The names of the authors may not be used to endorse or promote products
-       derived from this software without specific prior written permission.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-THE POSSIBILITY OF SUCH DAMAGE.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
-##################################################################
+dactyl.assert(window.TabGroupsManager, "TabGroups Manager addon is not installed");
 
-*/ //}}}
-
-dactyl.assert(window.TabGroupsManager, 'TabGroups Manager addon is not installed');
-
-var INFO = // {{{
-<plugin name="tab-groups-manager" version="0.4"
+// Documentation
+XML.ignoreWhitespace = false
+XML.prettyPrinting = false
+var INFO =
+<plugin name="tab-groups-manager" version="0.5"
         href="https://github.com/gwash/tab-groups-manager"
         summary="TabGroups Manager addon integration"
         xmlns={NS}>
     <author email="mrawash@gmail.com">M Rawash</author>
-    <license>New BSD License</license>
+    <license>GPL</license>
     <project name="Pentadactyl" minVersion="1.x"/>
     <p>
-        This plugin add some commands and mappings for the TabGroups Manager addon.
+        This plugin adds some commands and mappings for the <link 
+        topic="https://addons.mozilla.org/firefox/addon/tabgroups-manager">TabGroups
+        Manager</link> addon.
     </p>
-    <item>
-    <tags>:tabgroup</tags>
-    <spec>:<oa>count</oa>gr<oa>oup</oa><oa>!</oa> <a>name|id</a></spec>
-    <spec><oa>count</oa>vv</spec>
-    <description>
-        <p>
-            Go to the specified group from the group list.
-            Argument can be either the group <a>id</a> or the <a>name</a>.
-            If <oa>count</oa> is given, go to the <oa>count</oa>th group.
-            If <oa>!</oa> is given, go to next group with <a>name</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>gv</tags>
-    <spec><oa>count</oa>gv</spec>
-    <description>
-        Repeat last :<ex>group</ex>! command.
-    </description>
-    </item>
-    <item>
-    <tags>gV</tags>
-    <spec><oa>count</oa>gV</spec>
-    <description>
-        Repeat last :<ex>group</ex>! command in reverse direction. Just like gv but in the other direction.
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupcreate</tags>
-    <spec>:tabgroupc<oa>reate</oa> <a>name</a></spec>
-    <spec>vc</spec>
-    <description>
-        <p>Create new group with <a>name</a>.</p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupopen</tags>
-    <spec>:tabgroupo<oa>pen</oa><oa>!</oa> <oa>arg1</oa>, <oa>arg2</oa>, ...</spec>
-    <spec>x</spec>
-    <description>
-        <p>Just like <ex>:tabopen</ex> but also uses a new group for all of URLs.
-        When used with <oa>!</oa>, the new group is not active.</p>
-    </description>
-    </item>
-    <item>
-    <tags>X</tags>
-    <spec>X</spec>
-    <description>
-        <p>Show a <ex>:tabgroupopen</ex> prompt containing the current URL.
-        Useful if you want to go somewhere by editing the URL of the current page.</p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroups</tags>
-    <spec>:tabgroups <oa>filter</oa></spec>
-    <spec>V</spec>
-    <description>
-        <p>
-          Show a list of groups matching <oa>filter</oa>. Without <oa>filter</oa> list all group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:grouptabopen</tags>
-    <spec>:grouptabopen<oa>!</oa> <oa>-tabgroup group</oa><oa>arg1</oa>, <oa>arg2</oa>, ...</spec>
-    <spec>vt</spec>
-    <description>
-        <p>Just like <ex>:tabopen</ex> but open tab in <oa>group</oa>.
-        When used with <oa>!</oa>, the new tab is not active.</p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupbuffer</tags>
-    <tags>:grouptab</tags>
-    <spec>:tabgroupb<oa>uffer</oa> <a>index</a></spec>
-    <spec>:groupt<oa>ab</oa> <a>index</a></spec>
-    <spec>vb</spec>
-    <description>
-        <p>
-          select buffer (=tab) of current group by <a>index</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupedbuffer</tags>
-    <tags>:groupedtab</tags>
-    <spec>:tabgroupedb<oa>uffer</oa> <a>index</a></spec>
-    <spec>:groupedt<oa>ab</oa> <a>index</a></spec>
-    <description>
-        <p>
-          select buffer (=tab) of all group by <a>index</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupbuffers</tags>
-    <tags>:grouptabs</tags>
-    <spec>:tabgroupbuffers <oa>filter</oa></spec>
-    <spec>:grouptabs <oa>filter</oa></spec>
-    <spec>vB</spec>
-    <description>
-        <p>
-          Show a list of buffers (=tabs) of current groups matching <oa>filter</oa>.
-          Without <oa>filter</oa> list all buffers of current group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupedbuffers</tags>
-    <tags>:groupedtabs</tags>
-    <spec>:tabgroupedbuffers <oa>filter</oa></spec>
-    <spec>:groupedtabs <oa>filter</oa></spec>
-    <description>
-        <p>
-          Show a grouped list of buffers (=tabs) matching <oa>filter</oa>.
-          Without <oa>filter</oa> grouped list all buffers.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupreload</tags>
-    <spec>:tabgroupr<oa>eload</oa> <oa>group</oa></spec>
-    <spec>vr</spec>
-    <description>
-        <p>
-          Reload all tabs in <oa>group</oa>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupmove</tags>
-    <tags>:tgmove</tags>
-    <spec>:<oa>count</oa>groupm<oa>ove</oa><oa>!</oa></spec>
-    <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>N</oa></spec>
-    <spec>:tabgroupm<oa>ove</oa><oa>!</oa> <oa>-N</oa> | <oa>+N</oa></spec>
-    <spec>v&lt;</spec>
-    <spec>v&gt;</spec>
-    <description>
-        <p>
-          Move the current croup to a position before group <oa>count</oa>. Without <oa>count</oa> or <oa>count</oa> is 0 move the current croup to a position before group <oa>N</oa>. When <oa>N</oa> is 0, the current group is not moved. Without <oa>N</oa> the current group is made the last one. <oa>N</oa> can also be prefixed with "+" or "-" to indicate a relative movement. If <oa>!</oa> is specified the movement wraps around the start or end of the group list.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupprevious</tags>
-    <tags>:tgprevious</tags>
-    <spec>:tabgroupp<oa>revious</oa></spec>
-    <spec>:tgp<oa>revious</oa></spec>
-    <spec>[x</spec>
-    <spec>gX</spec>
-    <spec>vh</spec>
-    <spec>v&lt;Left&gt;</spec>
-    <description>
-        <p>
-          Select previous group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupnext</tags>
-    <tags>:tgnext</tags>
-    <spec>:tabgroupn<oa>ext</oa></spec>
-    <spec>:tgn<oa>ext</oa></spec>
-    <spec>]x</spec>
-    <spec>gx</spec>
-    <spec>vl</spec>
-    <spec>v&lt;Right&gt;</spec>
-    <description>
-        <p>
-          Select next group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupbookmark</tags>
-    <spec>:tabgroupbo<oa>okmark</oa> <oa>group</oa></spec>
-    <description>
-        <p>
-          Bookmark <oa>group</oa>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupbookmarkall</tags>
-    <spec>:tabgroupbookmarka<oa>ll</oa></spec>
-    <description>
-        <p>
-          Bookmark all group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabattachtogroup</tags>
-    <spec>:tabattachtogroup <oa>group</oa></spec>
-    <description>
-        <p>
-            Attach the current tab to another group. If this is the last tab in a group, the
-            group will be closed.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabdetachtogroup</tags>
-    <spec>:tabdetachtogroup <oa>name</oa></spec>
-    <description>
-        <p>
-          Detach the current tab, and open it in its own group with <oa>name</oa>. As each group must contain at least one tab it is not possible to detach the only tab in a group.  Use <ex>:tabduplicatetogroup</ex> to copy the tab then call <ex>:tabdetachtogroup</ex>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgrouprename</tags>
-    <spec>:tabgrouprename <a>name</a></spec>
-    <description>
-        <p>
-        Rename group by <oa>name</oa>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupdelete</tags>
-    <tags>:tabgroupclose</tags>
-    <spec>:tabgroupd<oa>elete</oa> <oa>group</oa></spec>
-    <spec>:tabgroupc<oa>lose</oa> <oa>group</oa></spec>
-    <spec>vd</spec>
-    <spec>vD</spec>
-    <description>
-        <p>
-        Close <oa>group</oa> and all tabs in group. If <oa>!</oa> is specified the close only group.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupunclose</tags>
-    <spec>:tabgroupunc<oa>lose</oa> <a>id</a></spec>
-    <description>
-        <p>
-        Restore closed group by <a>id</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupsleep</tags>
-    <spec>:tabgroups<oa>leep</oa> <oa>group</oa></spec>
-    <spec>vs</spec>
-    <description>
-        <p>
-        Sleep <oa>group</oa>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupunsleep</tags>
-    <spec>:tabgroupuns<oa>leep</oa> <oa>id</oa></spec>
-    <description>
-        <p>
-        Restore sleeping group by <a>id</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgrouprestore</tags>
-    <spec>:tabgroupr<oa>estore</oa> <a>id</a></spec>
-    <description>
-        <p>
-        Restore group by <a>id</a>.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupclosedlistclear</tags>
-    <spec>:tabgroupclosedlistclear</spec>
-    <description>
-        <p>
-        Clear group closed list.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgrouponly</tags>
-    <spec>:tabgroupo<oa>nly</oa><oa>!</oa></spec>
-    <description><p>Sleep all another groups. If <oa>!</oa> is specified close all another group.</p></description>
-    </item>
-    <item>
-    <tags>:tabgroupundo</tags>
-    <spec>:<oa>count</oa>groupu<oa>ndo</oa><oa>!</oa></spec>
-    <spec>:<oa>count</oa>grouprestorel<oa>ast</oa><oa>!</oa></spec>
-    <spec>vu</spec>
-    <spec>vU</spec>
-    <description><p>Restore <oa>count</oa> last sleeping groups.  If <oa>!</oa> is specified restore closed groups.</p></description>
-    </item>
-    <item>
-    <tags>:tabgrouprewind</tags>
-    <spec>:<oa>count</oa>groupre<oa>wind</oa></spec>
-    <spec>:<oa>count</oa>gre<oa>wind</oa></spec>
-    <spec>v0</spec>
-    <spec>v$</spec>
-    <spec>vk</spec>
-    <spec>v&lt;Up&gt;</spec>
-    <description><p>Select <oa>count</oa>th or first group.</p></description>
-    </item>
-    <item>
-    <tags>:tabgrouplast</tags>
-    <spec>:<oa>count</oa>groupl<oa>ast</oa></spec>
-    <spec>:<oa>count</oa>gl<oa>ast</oa></spec>
-    <spec>v$</spec>
-    <spec>vj</spec>
-    <spec>v&lt;Down&gt;</spec>
-    <description><p>Select <oa>count</oa>th or last group.</p></description>
-    </item>
-    <item>
-    <tags>:tabgroupbartoggle</tags>
-    <spec>:tabgroupbartoggle</spec>
-    <description><p>Toogle group bar</p></description>
-    </item>
-    <item>
-    <tags>:tabgroupdo</tags>
-    <spec>:tabgroupdo<a>cmd</a></spec>
-    <description>
-        <p>
-            Execute <a>cmd</a> in each group. <a>cmd</a> is executed in each group starting with the first and ending with the last which becomes the current group.
-        </p>
-        <p>
-            <a>cmd</a> should not alter the group list state by adding, removing or reordering groups.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupduplicate</tags>
-    <spec>:tabgroupdu<oa>plicate</oa></spec>
-    <description>
-        <p>
-            Duplicate the current group and switch to the duplicate. If <oa>count</oa> is given, duplicate the group <oa>count</oa> times.
-        </p>
-    </description>
-    </item>
-    <item>
-    <tags>:tabgroupsort</tags>
-    <spec>:tabgroupsort</spec>
-    <description>
-        <p>
-            Sort group list.
-        </p>
-    </description>
-    </item>
-</plugin>; // }}}
 
+    <h3 tag="creating-tabgroups">Creating TabGroups</h3>
+    <item>
+        <tags>vc :tgcr :tgcreate :tabgroupcr :tabgroupcreate</tags>
+        <spec>:tabgroupcr<oa>eate</oa> <oa>name</oa></spec>
+        <spec>vc</spec>
+        <description>
+            <p>
+                Create a new TabGroup with <oa>name</oa>. If <oa>!</oa> is given, new
+                TabGroup will be focused.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vo :tgop :tgopen :tgnew :tabgroupnew :tabgroupop :tabgroupopen</tags>
+        <spec>
+            :tabgroupop<oa>en</oa><oa>!</oa> <oa>-name=<a>name</a></oa> <oa>args</oa>
+        </spec>
+        <spec>vo</spec>
+        <description>
+            <p>
+                Similar to <ex>:tabopen</ex> but opens <oa>args</oa> in a new TabGroup 
+                with name <a>name</a> if specified. If <oa>!</oa> is given, new TabGroup 
+                will be focused.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vO</tags>
+        <spec>vO</spec>
+        <description>
+            <p>Open a <ex>:tabgroupopen</ex> prompt followed by the current URL.</p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgdu :tgduplicate :tabgroupdu :tabgroupduplicate</tags>
+        <spec>:<oa>count</oa>tabgroupdu<oa>plicate</oa><oa>!</oa></spec>
+        <description>
+            <p>
+                Duplicates current TabGroup <oa>count</oa> times. The last duplicate 
+                TabGroup is focused if <oa>!</oa> is provided.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tabdetachgtog :tabdetachgtogroup</tags>
+        <spec>:tabdetachgtog<oa>roup</oa><oa>!</oa> <oa>name</oa></spec>
+        <description>
+            <p>
+                Detach the current tab, and open it in its own TabGroup with name 
+                <oa>name</oa>, if supplied. If this is the last tab in a TabGroup, 
+            the TabGroup will be closed.
+            </p>
+            <p>
+                If <oa>!</oa> is added, the tab will be copied to a new TabGroup.
+            </p>
+        </description>
+    </item>
+    
+    <h3 tag="navigating-tabgroups">Navigating TabGroups</h3>
+    <item>
+        <tags>vv :tg :tgroup :tabg :tabgroup</tags>
+        <spec>:<oa>count</oa>tabg<oa>roup</oa> <oa>index|match</oa></spec>
+        <spec><oa>count</oa>vv</spec>
+        <description>
+            <p>
+                Go to the specified TabGroup from a list. Argument can be either a 
+                TabGroup <em>index</em>, <em>match</em> or a 
+                <link topic="tabgroups-special-characters">special 
+                charcters</link>.
+            </p>
+            <p>    
+                If <oa>count</oa> is given, focus the <oa>count</oa>th 
+                TabGroup.
+            </p>
+            <p tag="tabgroups-special-characters">
+                Special charcters supported by all
+                <link topic="tab-groups-manager-plugin">tab-groups-manager</link> lists:
+            </p>
+            <dl dt="width: 6em;">
+                <dt><hl key="Indicator">%</hl></dt>
+                    <dd>The current TabGroup/tab, where indicated</dd>
+                <dt><hl key="Indicator">#</hl></dt>
+                    <dd>The alternate TabGroup/tab, where indicated</dd>
+                <dt><hl>^</hl></dt>
+                    <dd>First item in the list</dd>
+                <dt><hl>$</hl></dt>
+                    <dd>Last item in the list</dd>
+            </dl>
+        </description>
+    </item>
+    <item>
+        <tags>vV :tgls :tabgroups</tags>
+        <spec>:tabgroups <oa>filter</oa></spec>
+        <spec>vV</spec>
+        <description>
+            <p>
+                Show a list of TabGroups matching <oa>filter</oa>. Without 
+                <oa>filter</oa> list all TabGroups.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&lt;Right&gt; vh gv :tgn :tgnext :tabgroupn :tabgroupnext</tags>
+        <spec>:<oa>count</oa>tabgroupn<oa>ext</oa><oa>!</oa></spec>
+        <spec><oa>count</oa>vh</spec>
+        <description>
+            <p>
+                Go to the next or <oa>count</oa>th <em>active</em> TabGroup in the right 
+                direction. If <oa>!</oa> is provided, <em>suspended</em> groups will 
+                not be skipped.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&lt;Left&gt; vl gV :tgp :tgprevious :tabgroupp :tabgroupprevious</tags>
+        <spec>:<oa>count</oa>tabgroupp<oa>revious</oa><oa>!</oa></spec>
+        <spec><oa>count</oa>vl</spec>
+        <description>
+            <p>
+                Go to the previous or <oa>count</oa>th <em>active</em> TabGroup in the 
+                left direction. If <oa>!</oa> is provided, <em>suspended</em> groups 
+                will not be skipped.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&lt;Up&gt; vk v^ :tgf :tgfirst :tabgroupf :tabgroupfirst :tabgrouprewind</tags>
+        <spec>:tabgroupf<oa>irst</oa><oa>!</oa></spec>
+        <spec>vk</spec>
+        <description>
+            <p>
+                Go to the first <em>active</em> TabGroup. If <oa>!</oa> is provided, go 
+                to the first <em>visible</em> TabGroup.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&lt;Down&gt; vj v$ :tgl :tglast :tabgroupl :tabgrouplast</tags>
+        <spec>:tabgroupl<oa>ast</oa><oa>!</oa></spec>
+        <spec>vj</spec>
+        <description>
+            <p>
+                Go to the last <em>active</em> TabGroup. If <oa>!</oa> is provided, go 
+                to the last <em>visible</em> TabGroup.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vb :tgb :tgbuffer :tabgroupb :tabgroupbuffer</tags>
+        <spec>:<oa>count</oa>tabgroupb<oa>uffer</oa> <oa>index|match</oa></spec>
+        <description>
+            <p>
+                Go to the specified TabGroup buffer from the buffer list. It takes the 
+                same arguments as <ex>:buffer</ex> in addition to the 
+                <link topic="tabgroups-special-characters">special 
+                charcters</link> available to all <link topic="tab-groups-manager-plugin">
+                tab-groups-manager</link>'s lists.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vB :tgbls :tabgroupbuffers</tags>
+        <spec>:tabgroupbuffers <oa>filter</oa></spec>
+        <spec>vB</spec>
+        <description>
+            <p>
+                Show a list of the current TabGroup buffers matching <oa>filter</oa>. 
+                Without <oa>filter</oa> list all tabs in TabGroup.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tabgroupedb :tabgroupedbuffer</tags>
+        <spec>:tabgroupedb<oa>uffer</oa> <oa>index|match</oa></spec>
+        <description>
+            <p>
+                Similar to <ex>:tabgroupbuffer</ex> but shows a list of all buffers, 
+                <em>grouped</em> by <em>visible</em> TabGroups.
+            </p>
+            <note>
+                This could be a complete replacement for <ex>:buffer</ex>.
+            </note>
+            <example>
+                <ex>
+                    nmap -d "Switch to a grouped buffer" b :tabgroupedbuffer&lt;Space&gt;
+                </ex>
+            </example>
+        </description>
+    </item>
+    <item>
+        <tags>:tabgroupedbuffers</tags>
+        <spec>:tabgroupedbuffers <oa>filter</oa></spec>
+        <description>
+            <p>
+                Show a list of all buffers matching <oa>filter</oa>.
+                Without <oa>filter</oa> list all tabs grouped by TabGroups.
+            </p>
+            <example>
+                <ex>
+                    nmap -d "Show a list of grouped buffers" B -ex :tabgroupedbuffers
+                </ex>
+            </example>
+        </description>
+    </item>
+    
+    <h3 tag="reordering-tabgroups">Reordering TabGroups</h3>
+    <item>
+        <tags>:tgm :tgmove :tabgroupm :tabgroupmove</tags>
+        <spec>:<oa>count</oa>tabgroupm<oa>ove</oa> <oa>index|match</oa></spec>
+        <spec>:<oa>count</oa>tabgroupm<oa>ove</oa> <oa>+N|-N</oa></spec>
+        <description>
+            <p>
+                Move the current TabGroup to the position of the TabGroup specified by 
+                argument. <oa>+N|-N</oa> indicate a relative movement to the right or 
+                left, wrapping around if hit either ends.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&gt;</tags>
+        <spec><oa>count</oa>v&gt;</spec>
+        <description>
+            <p>
+                Move the current TabGroup one or <oa>count</oa> spots in the right 
+                direction.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>v&lt;</tags>
+        <spec><oa>count</oa>v&lt;</spec>
+        <description>
+            <p>
+                Move the current TabGroup one or <oa>count</oa> spots in the left
+                direction.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgsort :tabgroupsort</tags>
+        <spec>:tabgroupsort</spec>
+        <description>
+            <p>
+                Case-sensitive sort of <em>visible</em> TabGroups.
+            </p>
+        </description>
+    </item>
 
-// ---------------------------
-// PLUGIN
-// ---------------------------
-// {{{
+    <h3 tag="deactivating-tabgroups">Deactivating/Restoring TabGroups</h3>
+    <item>
+        <tags>vs :tgsu :tgsuspend :tabgroupsu :tabgroupsuspend</tags>
+        <spec>:tabgroupsu<oa>spend</oa> <oa>index|match</oa></spec>
+        <spec>vs</spec>
+        <description>
+            <p>
+                Suspend TabGroup specified by argument, or current if none was specified.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgunsu :tgunsuspend :tabgroupunsu :tabgroupunsuspend</tags>
+        <spec>:tabgroupunsu<oa>spend</oa><oa>!</oa> <a>index|match</a></spec>
+        <description>
+            <p>
+                Restore suspended TabGroup specified by argument. If <oa>!</oa> is 
+                given, restored TabGroup will be selected. 
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vS :tgsl :tgsleep :tabgroupsl :tabgroupsleep</tags>
+        <spec>:tabgroupsl<oa>eep</oa> <oa>index|match</oa></spec>
+        <spec>vS</spec>
+        <description>
+            <p>
+                Sleep TabGroup specified by argument, or current if none was specified.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgunsl :tgunsleep :tabgroupunsl :tabgroupunsleep</tags>
+        <spec>:tabgroupunsl<oa>eep</oa><oa>!</oa> <a>index|match</a></spec>
+        <description>
+            <p>
+                Restore sleeping TabGroup specified by argument. If <oa>!</oa> is given, 
+                restored TabGroup will be selected.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vd :tgde :tgdelete :tgcl :tgclose :tabgroupde :tabgroupdelete :tabgroupcl :tabgroupclose</tags>
+        <spec>:tabgroupde<oa>lete</oa><oa>!</oa> <oa>index|match</oa></spec>
+        <spec>vd</spec>
+        <description>
+            <p>
+                Delete TabGroup specified by argument, or current if none was specified.
+            </p>
+            <p>
+                If <oa>!</oa> is given, deleted TabGroup will not be saved to the closed
+                TabGroups list, which means it can't be <em>restored</em> or seen later.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vD</tags>
+        <spec>vD</spec>
+        <description>
+            <p>
+                Like <k>vd</k> but selects TabGroup to the left of the deleted TabGroup 
+                after deletion.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgunde :tgundelete :tguncl :tgunclose :tabgroupunde :tabgroupundelete :tabgroupuncl :tabgroupunclose</tags>
+        <spec>:tabgroupunsl<oa>eep</oa><oa>!</oa> <a>index|match</a></spec>
+        <description>
+            <p>
+                Restore closed TabGroup specified by argument. If <oa>!</oa> is given, 
+                restored TabGroup will be selected.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgon :tgonly :tabgroupon :tabgrouponly</tags>
+        <spec>:tabgroupon<oa>ly</oa><oa>!</oa></spec>
+        <description>
+            <p>
+                Sleep all TabGroups other than the one selected.
+            </p>
+            <p>
+                If <oa>!</oa> is added, it will <em>close</em> all other TabGroups 
+                instead.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vu</tags>
+        <spec>vu</spec>
+        <description>
+            <p>
+                Restore last closed TabGroup. 
+            </p>
+            <p>
+                Equivalent to <ex>:tabgroupunclose ^</ex>
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>vU :tgundo :tgres :tgrestore :tabgroupundo :tabgroupres :tabgrouprestore</tags>
+        <spec>:tabgroupres<oa>tore</oa><oa>!</oa> <a>index|match</a></spec>
+        <spec>vU</spec>
+        <description>
+            <p>
+                Restore any restorable TabGroup specified by argument. If <oa>!</oa> is 
+                given, restored TabGroup will be selected.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tabgroupclear :tabgroupclearclosedlist</tags>
+        <spec>:tabgroupclear<oa>closedlist</oa></spec>
+        <description>
+            <p>
+                Clear <em>closed</em> TabGroups list.
+            </p>
+        </description>
+    </item>
+    
+    <h3 tag="tabgroups-actions">TabGroups Actions</h3>
+    <item>
+        <tags>vr :tgrel :tgreload :tabgrouprel :tabgroupreload</tags>
+        <spec>:tabgrouprel<oa>oad</oa> <oa>index|match</oa></spec>
+        <spec>vr</spec>
+        <description>
+            <p>
+                Reload all tabs in the specified TabGroup, or the current TabGroup if 
+                none was specified.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgren :tgrename :tabgroupren :tabgrouprename</tags>
+        <spec>:tabgroupren<oa>ame</oa><oa>!</oa> <oa>-tabgroup=<a>index|match</a></oa> <oa>name</oa></spec>
+        <description>
+            <p>
+                Rename current TabGroup, or the one specified by <em>-tabgroup</em> (short
+                name: <em>-tg</em>), to <oa>name</oa>.
+            </p>
+            <p>
+                If <oa>!</oa> is added and <oa>name</oa> was not given, it'll auto rename
+                the specified TabGroup according to its currently selected tab.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgbmark :tabgroupbo tabgroupbookmark</tags>
+        <spec>:tabgroupbo<oa>okmark</oa><oa>-name=<a>name</a></oa><oa>index|match</oa></spec>
+        <description>
+            <p>
+                Bookmark all tabs in TabGroup in a single folder named <oa>-name</oa> if 
+                provided, or TabGroup's name, otherwise.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgbmarkall :tabgroupbookmarka tabgroupbookmarkall</tags>
+        <spec>:tabgroupbookmarka<oa>ll</oa><oa>-name=<a>name</a></oa><oa>-type=<a>type</a></oa></spec>
+        <description>
+            <p>
+                Bookmark all TabGroups of type <oa>-type</oa> (short name: <em>-t</em>) or
+                <em>visible</em> TabGroups otherwise, in a folder with name <oa>-name</oa>
+                or one based on TabGroups type and current date.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgdo :tabgroupdo</tags>
+        <spec>:tabgroupdo<oa>!</oa> <a>cmd</a></spec>
+        <description>
+            <p>
+                Execute <a>cmd</a> once in each <em>active</em> TabGroup. Each TabGroup
+                is focused, in turn, and <a>cmd</a> is executed therin. The last TabGroup
+                remains focused after execution.
+            </p>
+            <p>
+                If <oa>!</oa> is added, it'll execute in all <em>visible</em> TabGroups. 
+                Restoring suspended TabGroups in the process.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tabattachgtog :tabattachgtogroup</tags>
+        <spec>:tabattachgtog<oa>roup</oa><oa>!</oa> <a>index|match</a></spec>
+        <description>
+            <p>
+                Attach the current tab to the specified TabGroup. If this is the last 
+                tab in a TabGroup, the TabGroup will be closed.
+            </p>
+            <p>
+                If <oa>!</oa> is added, the tab will be copied rather than moved.
+            </p>
+        </description>
+    </item>
+    <item>
+        <tags>:tgbar :tabgroupbartoggle</tags>
+        <spec>:tabgroupbartoggle</spec>
+        <description>
+            <p>
+                Toggle display of TabGroups bar.
+            </p>
+        </description>
+    </item>
 
-// Fields // {{{
-showGroupBar = false,
-lastId = -1,
-lastFilter = "",
-// }}}
+    <h3 tag="tabgroups-options">Options</h3>
+    <item>
+        <tags>'tgshowindicator' 'tabgroupshowindicator'</tags>
+        <strut/>
+        <spec>'tabgroupshowindicator' 'tgshowindicator'</spec>
+        <type>boolean</type>
+        <default>false</default>
+        <description>
+            <p>
+                Whether to show indicators in TabGroup lists.
+            </p>
+        </description>
+    </item>
+</plugin>
 
-GroupProxy = (function(){ // {{{
-    function cl(arg, type, silent) {
-        type = (type || "auto")
-        this.id = getGroupIdByArgs(arg, type)
-        if (type == "auto")
-            this.type = groups.itemTypeById(this.id)
-        else
-            this.type = type
+// Globals
+TGM = TabGroupsManager
+TGMAPI = TabGroupsManagerApiVer1
+allGroups = TGM.allGroups
+closedGroups = TGM.closedGroups
+sleepingGroups = TGM.sleepingGroups
+alternateGroup = null
+lastFilter = ""
 
-        /* //not sure what this does, but it's annoying//
-        if ((this.id == -1) && !silent)
-            alert("group id = -1")
-        */
-    }
-    cl.prototype = {
-        get originalItem() {
-            // return TabGroupsManager.allGroups.getGroupById(this.id)
-            return groups.itemById(this.id)
-        },
-        index : function() {
-            if (this.id == -1)
-                return -1
-            return getIndex(this.originalItem)
-        },
-        get is_selected() {
-                return this.id == TabGroupsManager.allGroups.selectedGroup.id
-        },
-        get is_alterneted() {
-                return this.id == lastId
-        },
-        get name() {
-            if (this.id == -1)
-                return "undefined group"
-            return this.originalItem.name
-        },
-        get icon() {
-            if (this.id == -1)
-                return null
-            let g = this.originalItem
-            return g.image!="" ? g.image : g.selectedTab && g.selectedTab.image
-        },
-        get indicator() {
-                return this.is_selected ? '%' : (this.is_alterneted ? '#' : ' ')
-        },
-        get guid() {
-            if (this.id == -1)
-                return "-1: `'"
-            return this.id + ": " + this.name
-        },
-        get url() {
-            return (this.originalItem.selectedTab) && this.originalItem.selectedTab.linkedBrowser.contentDocument.location.href
-        },
-        get urls() {
-            let filter = null
-            let ret = []
-            for (var i = 0; i < this.originalItem.tabArray.length; i++) {
-                let el = this.originalItem.tabArray[i]
-                if (filter) {
-                    if (re.test(el.label))
-                        ret.push(el.linkedBrowser.contentDocument.location.href)
-                } else
-                    ret.push(el.linkedBrowser.contentDocument.location.href)
-            }
-            return ret
-        },
-        //FIXME
-        get tabIndex() {
-            return this.originalItem.tabArray.indexOf(this.originalItem.selectedTab)
-        },
-        get tabCount() {
-            return this.originalItem.displayTabCount
-        },
-        get selectedTab() {
-            return this.originalItem.selectedTab
-        },
-        // Tabs
-        get previous() {
-            return getGroupByIndex(this.index() - 1)
-        },
-        get next() {
-            return getGroupByIndex(this.index() + 1)
-        },
-        tabsByFilter : function(filter) {
-            return groupTabs(this.originalItem, filter)
-        },
-        // Update,
-        beginUpdate : function () {
-            showGroupBar = TabGroupsManager.groupBarDispHide.dispGroupBar
-        },
-        endUpdate : function () {
-            TabGroupsManager.groupBarDispHide.dispGroupBar = showGroupBar
-            updateTabCount()
-        },
-        withUpdate : function (action, obj, args) {
-            this.beginUpdate()
-            let ret = action && action.apply(obj, args)
-            this.endUpdate()
-            return ret
-        },
-        withUpdateWithSourceGroup : function (action, args) {
-            return this.withUpdate(this.originalItem[action], this.originalItem, args)
-        },
-        // Methods
-        select: function () {
-            this.beginUpdate()
-            //TabGroupsManager.allGroups.selectedGroup = this.originalItem
-            //TabGroupsManager.allGroups.groupbar.selectedItem = TabGroupsManager.allGroups.selectedGroup.groupTab
-            TabGroupsManager.allGroups.groupbar.selectedItem = this.originalItem.groupTab
-            lastId = this.originalItem.id
-            this.endUpdate()
-            dactyl.focusContent()
-            return this
-        },
-        setName: function(value, auto) {
-            this.beginUpdate()
-            if (value=="" && auto)  
-                TabGroupsManager.allGroups.selectedGroup.autoRenameNameOnly();
-            else
-                this.originalItem.setName(value)
-            this.endUpdate()
-        },
-        selectTab: function(count) {
-            let tab = this.originalItem.tabArray[count]
-            this.beginUpdate()
-            if (tab)
-                this.originalItem.setSelectedTab(tab)
-            this.endUpdate()
-        },
-        selectPreviousTab: function(special) {
-            this.beginUpdate()
-            let tab = this.originalItem.getPreviousTabInGroup(this.originalItem.selectedTab)
-            if (tab)
-                this.originalItem.setSelectedTab(tab)
-            else if (special)
-                this.originalItem.setSelectedTab(this.originalItem.lastTab)
-            this.endUpdate()
-        },
-        selectNextTab: function(special) {
-            this.beginUpdate()
-            let tab = this.originalItem.getNextTabInGroup(this.originalItem.selectedTab)
-            if (tab)
-                this.originalItem.setSelectedTab(tab)
-            else if (special)
-                this.originalItem.setSelectedTab(this.originalItem.firstTab)
-            else
-                this.originalItem.setSelectedTab(this.originalItem.firstTab)
-            this.endUpdate()
-        },
-        loadUrls : function (a_urls) {
-            if (!a_urls)
-                return 0
-            let ret = 0
-            for (var i = a_urls.length - 1; i >= 0; i--) {
-                let tab = gBrowser.addTab(a_urls[i])
-                this.originalItem.addTab(tab, false)
-                ret = ret + 1
-            }
-            return ret
-        },
-        reloadUrls : function (a_urls) {
-            let ret = 0
-            let last_len = this.originalItem.tabArray.length
-            let first_tab = this.originalItem.tabArray[0]
-            this.beginUpdate()
-            for (var i = this.originalItem.tabArray.length - 1; i > 0; i--) {
-                tabs.remove(this.originalItem.tabArray[i])
-            }
-            dactyl.open("about:blank")
-            if (!a_urls || (a_urls.length == 0)) {
-                this.endUpdate()
-                // dactyl.echoerr("reloadUrls with length(a_urls) = 0")
-                return
-            }
-            if (false) {
-                ret = this.loadUrls(a_urls)
-                if (last_len > 0)
-                    tabs.remove(first_tab)
-            } else {
-                dactyl.open(a_urls[0])
-                ret = this.loadUrls(a_urls.slice(1))
-            }
-            this.endUpdate()
-            return ret
-        },
-        reload: function() {
-            if (this.originalItem.reloadTabInGroup)
-                this.withUpdateWithSourceGroup("reloadTabInGroup", [])
-            else if (this.originalItem.reloadTabsInGroup)
-                this.withUpdateWithSourceGroup("reloadTabsInGroup", [])
-            dactyl.echomsg("Group `" + this.name + "' did reload.")
-        },
-        move: function(pos, abs) {
-            this.beginUpdate()
-            if (pos == null) {
-                alert('pos == null')
-                return this
-            }
-            if (abs)
-                var new_pos = pos
-            else
-                var new_pos = (this.index() + pos) % TabGroupsManager.allGroups.childNodes.length
-            TabGroupsManager.allGroups.changeGroupOrder(this.originalItem, new_pos)
-            this.endUpdate()
-        },
-        bookmark: function() {
-            this.withUpdateWithSourceGroup("bookmarkThisGroupCore", [this.originalItem.name])
-        },
-        attachTab: function(tab) {
-            this.beginUpdate()
-            if (tab)
-                this.originalItem.dndMoveTabToGroup(tab)
-            else
-                this.originalItem.dndMoveTabToGroup(TabGroupsManager.allGroups.selectedGroup.selectedTab)
-            this.endUpdate()
-        },
-        sleep: function() {
-            if (this.id == -1) {
-                dactyl.echoerr('nobody group not sleeping');
-                return false;
-            }
-            this.withUpdateWithSourceGroup("sleepGroup", [])
-        },
-        suspend: function() {
-            this.withUpdateWithSourceGroup("suspendGroup", [])
-        },
-        close: function(reverse) {
-            let prev = this.previous
-            this.withUpdateWithSourceGroup("close", [])
-            if (reverse)
-                prev.select()
-            dactyl.echomsg("Close group with name `" + this.name + "'")
-        },
-        closeAllTabsAndSelf: function(reverse) {
-            let prev = this.previous
-            this.withUpdateWithSourceGroup("closeAllTabsAndGroup", [])
-            if (reverse)
-                prev.select()
-            dactyl.echomsg("Close group with name `" + this.name + "' and its tabs")
-        },
-        deleteOtherGroups : function(special) {
-            this.beginUpdate()
-            for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-                if (TabGroupsManager.allGroups.childNodes.item(i).group.id != this.id) {
-                    if (special)
-                        TabGroupsManager.allGroups.childNodes.item(i).group.closeAllTabsAndGroup()
-                    else
-                        TabGroupsManager.allGroups.childNodes.item(i).group.sleepGroup()
-                }
-            }
-            this.endUpdate()
-        },
-        unsuspend: function(){
-            if (this.id!=-1 ) {
-                this.withUpdateWithSourceGroup("unsuspendGroup", [])
-                return this
-            } else
-                return false
-        },   
-        unsleep: function(){
-            if (this.id!=-1) {
-                this.beginUpdate()
-                TabGroupsManager.sleepingGroups.restoreGroup(this.id)
-                this.endUpdate()
-                return this
-            } else
-                return false
-        },
-        unclose: function(){
-            if (this.id!=-1) {
-                this.beginUpdate()
-                TabGroupsManager.closedGroups.restoreGroup(this.id)
-                this.endUpdate()
-                return this
-            } else
-                return false  
-        },
-        restore: function(){
-            let type = groups.itemTypeById(this.id)
-            switch (type){
-                case "normal":
-                    return this.unsuspend()
-                case "sleeping":
-                    return this.unsleep()
-                case "closed":
-                    return this.unclose()
-                default:
-                    return false
-             }
-        },
-        duplicate : function (count) {
-            let urls = this.urls
-            count = count || 0
-            for (var i = 0; i < count; i++) {
-                createGroup(urls, [], null, false)
-            }
-        }
-    };
-    return cl;
-})() //}}}
-
-Groups = (function(){ // {{{
-    function cl() {
-    }
-    cl.prototype = {
-        get originalCount() {
-            return TabGroupsManager.allGroups.childNodes.length
-        },
-        originalItem : function (index) {
-            return TabGroupsManager.allGroups.childNodes.item(index)
-        },
-        get originalItems () {
-            ret = []
-            for (var i = 0; i < this.originalCount; i++) {
-                ret.push(this.originalItem(i))
-            }
-            return ret
-        },
-        // Normal groups
-        get count () {
-            return this.originalCount
-        },
-        item : function (index) {
-            return new GroupProxy(this.originalItem(index).group.id, "auto")
-        },
-        get items () {
-            ret = []
-            for (var i = 0; i < this.count; i++) {
-                ret.push(this.item(i))
-            }
-            return ret
-        },
-        // Closed groups
-        get closedCount () {
-            return TabGroupsManager.closedGroups.store.length
-        },
-        closedItem : function (index) {
-            return TabGroupsManager.closedGroups.store[index]
-        },
-        // Sleeping groups
-        get sleepingCount () {
-            return TabGroupsManager.sleepingGroups.store.length
-        },
-        sleepingItem : function (index) {
-            return TabGroupsManager.sleepingGroups.store[index]
-        },
-        // Meta groups
-        get metaItems () {
-            ret = []
-            for (var i = 0; i < this.originalCount; i++) {
-                ret.push(new GroupProxy(this.originalItem(i).group.id, "normal"))
-            }
-            for (var i = 0; i < this.closedCount; i++) {
-                ret.push(new GroupProxy(this.closedItem(i).id, "closed"))
-            }
-            for (var i = 0; i < this.sleepingCount; i++) {
-                ret.push(new GroupProxy(this.sleepingItem(i).id, "sleeping"))
-            }
-            return ret
-        },
-        // Filter
-        filterByName : function (items, pattern, fuzzy) {
-            let ret = []
-            for (var i = 0; i < items.length; i++) {
-                if (fuzzy) {
-                    if (items[i].name.match(pattern)) {
-                        ret.push(items[i])
-                    }
-                } else {
-                    if (items[i].name == pattern) {
-                        ret.push(items[i])
-                    }
-                }
-            }
-            if (ret.length == 0)
-                return null
-            else
-                return ret
-        },
-        itemsByName : function (name) {
-            return (this.filterByName(this.items, name, false)
-                || this.filterByName(this.items, name, true)
-                || [])
-        },
-        metaItemsByName : function (name) {
-            return (this.filterByName(this.metaItems, name, false)
-                || this.filterByName(this.metaItems, name, true)
-                || [])
-        },
-        //
-        itemTypeById : function (id) {
-            if (id == -1)
-                return "null"
-            else if (TabGroupsManager.allGroups.getGroupById(id))
-                return "normal"
-            else if (TabGroupsManager.closedGroups.getGroupById(id))
-                return "closed"
-            else if (TabGroupsManager.sleepingGroups.getGroupById(id))
-                return "sleeping"
-            else
-                return "null"
-        },
-        itemById : function (id) {
-            let type = this.itemTypeById(id)
-            if (type == "null")
-                return null
-            else if (type == "normal")
-                return TabGroupsManager.allGroups.getGroupById(id)
-            else if (type == "closed")
-                return TabGroupsManager.closedGroups.getGroupById(id)
-            else if (type == 'sleeping')
-                return TabGroupsManager.sleepingGroups.getGroupById(id)
-            else
-                return null
-        },
-        // Getting group
-        get index () {
-            return TabGroupsManager.allGroups.groupbar.selectedIndex
-        },
-        get current() {
-            return new GroupProxy(TabGroupsManager.allGroups.selectedGroup.id)
-        },
-        get previous() {
-            return this.getGroupByIndex(this.index - 1)
-        },
-        get next() {
-            return this.getGroupByIndex(this.index + 1)
-        },
-        get first() {
-            return new GroupProxy(TabGroupsManager.allGroups.firstChild.group.id)
-        },
-        get last() {
-            return new GroupProxy(TabGroupsManager.allGroups.lastChild.group.id)
-        },
-        get lastClosed() {
-            return lastClosedGroup()
-        },
-        get lastSleeping() {
-            return lastSleepingGroup()
-        },
-        get lastRestorable() {
-            return lastRestorableGroup()
-        },
-        get caption () {
-            let c = this.current
-            return ("[" + (c.tabIndex + 1) + "/" + c.tabCount + "] " + c.name +  "(" + (this.index + 1) + "/" + this.count + ") ");
-        },
-        // Update
-        beginUpdate : function () {
-            this.showGroupBar = TabGroupsManager.groupBarDispHide.dispGroupBar
-        },
-        endUpdate : function () {
-            TabGroupsManager.groupBarDispHide.dispGroupBar = this.showGroupBar
-            updateTabCount()
-        },
-        withUpdate : function (action, obj, args) {
-            this.beginUpdate()
-            let ret = action.apply(obj, args)
-            this.endUpdate()
-            return ret
-        },
-        withUpdateWithSourceGroup : function (action, args) {
-            return this.withUpdate(this.originalItem[action], this.originalItem, args)
-        },
-        // Methods
-        getItemsByFilter : function (filter) {
-            ret = []
-            let re = new RegExp('.*' + filter + '.*', 'ig')
-            for (var i = 0; i < this.originalCount; i++) {
-                if (filter) {
-                    if (this.originalItem(i).group.name.match(re))
-                        ret.push(this.originalItem(i))
-                } else
-                    ret.push(this.originalItem(i))
-            }
-            return ret.map(function (item) new GroupProxy(item.group.id))
-        },
-        sort : function () {
-            swap = function (from, to) {
-                TabGroupsManager.allGroups.changeGroupOrder(from, to)
-            }
-            let l = this.originalCount
-            this.beginUpdate()
-            for (var i = 0; i < l; i++)
-                for (var j = i; j < l; j++) {
-                if (this.originalItem(i).group.name > this.originalItem(j).group.name)
-                    swap(this.originalItem(i).group, j)
-                }
-            this.endUpdate()
-        },
-    };
-    return cl;
-})() //}}}
-
-// Methods // {{{
-// Update
-function beginUpdate() {
-     showGroupBar = TabGroupsManager.groupBarDispHide.dispGroupBar
+// Functions
+function selectedGroup() {
+    return allGroups.selectedGroup
 }
-function endUpdate() {
-    TabGroupsManager.groupBarDispHide.dispGroupBar = showGroupBar
-    updateTabCount()
+
+function selectedIndex() {
+    return allGroups.groupbar.selectedIndex
 }
-function updateTabCount() {
-    if (dactyl.has("tabs")) {
-        let tabCountWidget = document.getElementById("dactyl-statusline-field-tabcount");
-        tabCountWidget.value = groups.caption
-    }
-}
-// Indices
-function hasIndex(index) {
-    // XXX for tab? add group!
-    for (var i = 0; i < TabGroupsManager.allGroups.selectedGroup.tabArray.length; i++) {
-        if (TabGroupsManager.allGroups.selectedGroup.tabArray[i]._tPos == index)
-            return true
-    }
-    return false
-}
-function getIndex(group) {
-    for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-        if (TabGroupsManager.allGroups.childNodes.item(i).group.id == group.id)
-            return i
-    }
-    return -1
-}
-function selectedIndex(group) {
-    return TabGroupsManager.allGroups.groupbar.selectedIndex
-}
+
 function groupCount() {
-    return TabGroupsManager.allGroups.childNodes.length
+    return allGroups.childNodes.length
 }
-function getFirst(name, type) {
-}
-function getGroupIdByName(name, type) {
-    let items_funs = {
-        auto: function (name) groups.metaItemsByName(name),
-        normal: function (name) groups.itemsByName(name)}
-    if (type == 'auto') {
-        // let ids = groups.getItemsByFilter(name).map(function (el) el.id)
-        // if (ids.length > 0)
-        //     return ids[0]
-        return ids = groups.metaItemsByName(name).map(function (el) el.id)[0]
-    } else if (type == 'normal') {
-        // let ids = groups.getItemsByFilter(name).map(function (el) el.id)
-        // if (ids.length > 0)
-        //     return ids[0]
-        return ids = groups.itemsByName(name).map(function (el) el.id)[0]
-        // for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-        //     if (TabGroupsManager.allGroups.childNodes.item(i).group.name.match(name)) {
-        //         return TabGroupsManager.allGroups.childNodes.item(i).group.id
-        //     }
-        // }
-   } else if (type == 'restorable') {
-       for (var i = 0; i < TabGroupsManager.allGroups.length; i++) {
-           let g = TabGroupsManager.allGroups.childNodes[i].group
-           if (g.suspened){
-               if (g.name.match(name))
-                   return g.id
-           }
-       }
-       for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
-           if (TabGroupsManager.sleepingGroups.store[i].name.match(name)) {
-               return TabGroupsManager.sleepingGroups.store[i].id
-           }
-       }
-       for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
-           if (TabGroupsManager.closedGroups.store[i].name.match(name)) {
-               return TabGroupsManager.closedGroups.store[i].id
-           }
-       }
-   } else if (type == 'sleeping') {
-       for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
-           if (TabGroupsManager.sleepingGroups.store[i].name.match(name)) {
-               return TabGroupsManager.sleepingGroups.store[i].id
-           }
-       }
-   } else if (type == 'closed') {
-       for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
-           if (TabGroupsManager.closedGroups.store[i].name.match(name)) {
-               return TabGroupsManager.closedGroups.store[i].id
-           }
-       }
-   }
-   return -1
-}
-function getGroupIdByArgs(arg, type) {
-    if (!arg || (arg == "") || (arg == "%")) {
-        return TabGroupsManager.allGroups.selectedGroup.id
-    } else if (arg == "#") {
-        return lastId
-    } else if (arg == "0") {
-        return TabGroupsManager.allGroups.firstChild.group.id
-    } else if (arg == "$") {
-        return TabGroupsManager.allGroups.lastChild.group.id
-    } else {
-        if (typeof arg == "object")
-            return arg
-        else if (typeof arg == "number")
-            return arg
-        else if (typeof arg == "string") {
-            if (/^\d+:.*$/.test(arg))
-                return parseInt(arg)
-            else
-                return getGroupIdByName(arg, type)
-        } else
-            return getGroupIdByName(arg, type)
+
+function updateStatusline() {
+    if (dactyl.has("tabs")) {
+        let g = selectedGroup()
+        let tabCountWidget = document.getElementById("dactyl-statusline-field-tabcount")
+        tabCountWidget.value =
+            "[" + (getGroupTabIndex(g.selectedTab)+1) + "/" + g.displayTabCount + "] " +
+                 g.name + "(" + (selectedIndex()+1) + "/" + groupCount() + ")"
     }
+}
+
+function getGroupIndex(group, type) {
+    let groups = getGroups(type)
+    if (group && groups)
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i] == group)
+                return i
+        }
     return -1
 }
-function getGroupByArgs(args) {
-    let id = getGroupIdByArgs(args, 'auto')
-    // return getGroupById(id)
-    return groups.itemById(id)
-}
-// Getting group
-function getGroup(arg, silent) {
-    return new GroupProxy(arg, 'auto', silent)
-}
-function restorableGroup(arg) {
-    return new GroupProxy(arg, 'restorable')
-}
-function getGroupByIndex(index) {
-    return new GroupProxy(TabGroupsManager.allGroups.childNodes[index].group.id)
-}
-function getNextActiveGroup(index) {
-    for (var i = index + 1; i < groupCount(); i++) {
-        let g = TabGroupsManager.allGroups.childNodes[i].group
-        if (!g.suspended)
-            return i
-    }
-    return arguments.callee(-1)
-}
-function getPrevActiveGroup(index) {
-    for (var i = index - 1; i > -1; i--) {
-        let g = TabGroupsManager.allGroups.childNodes[i].group
-         if (!g.suspended)
-            return i
-    }
-    return arguments.callee(groupCount())
-}
-function groupTabs(group, filter) {
-    ret = []
-    let re = new RegExp('.*' + filter + '.*', 'ig')
-    for (var i = 0; i < group.tabArray.length; i++) {
-        let el = group.tabArray[i]
-        if (filter) {
-            if (re.test(el.label))
-                ret.push(el)
-        } else
-            ret.push(el)
-    }
-    return ret
-}
-// Elements
-function groupElements() {
-    var ret = []
-    for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-        let g = TabGroupsManager.allGroups.childNodes.item(i).group
-        let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
-        let label = !g.suspended ? g.selectedTab.label : "suspended - " + g.name
-        let indicator = (g==TabGroupsManager.allGroups.selectedGroup) ? "%" : " "
-        let image = g.image!="" ? g.image : g.selectedTab ? g.selectedTab.image : ""
 
-        ret.push({
-            text: i+1 + ": " + g.name,
-            description: label,
-            tabcount: count,
-            indicator: indicator,
-            icon: image,
-            command: "top.TabGroupsManager.allGroups.getGroupById("+g.id+").setSelected()"
-        });
-     }
-    return ret
+function getGroups(type) {
+    let groups = []
+    if (!type || type=="Visible")
+        for (var i = 0; i < groupCount(); i++)
+            groups.push(allGroups.childNodes[i].group)
+    else if (type=="Active")
+        groups = allGroups.makeNonSuspendedGroupsList()
+    else if (type=="Suspended")
+        for (var i = 0; i < groupCount(); i++) {
+            if (allGroups.childNodes[i].group.suspended)
+                groups.push(allGroups.childNodes[i].group)
+        }
+    else if (type=="Sleeping")
+        groups = groups.concat(sleepingGroups.store)
+    else if (type=="Closed")
+        groups = groups.concat(closedGroups.store)
+    else if (type=="Restorable")
+        groups = Array.concat(getGroups("Suspended"), getGroups("Sleeping"), getGroups("Closed"))
+    return groups
 }
-function groupTabElements(group) {
-    if (!group)
-        group = TabGroupsManager.allGroups.selectedGroup
-    var ret = []
-    for (var i = 0; i < group.tabArray.length;i++) {
-        let tab = group.tabArray[i];
-        let url = tab.linkedBrowser.contentDocument.location.href;
-        let indicator = " ";
 
-        if (tab._tPos == group.selectedTab._tPos)
-           indicator = "%"
-        else if (tabs.alternate && tab._tPos == tabs.alternate._tPos)
-           indicator = "#";
-
-        ret.push({
-            text: [i+1 + ": " + (tab.label || "(Untitled)"), i+1 + ": " + url],
-            url:  template.highlightURL(url),
-            indicator: indicator,
-            icon: tab.image || BookmarkCache.DEFAULT_FAVICON
-        });
+function getGroupByName(name, type) {
+    lastFilter = name
+    let groups = getGroups(type)
+    
+    for (var i = 0; i < groups.length; i++) {
+        if (groups[i].name.match(name))
+            return groups[i]
     }
-    return ret
+    return dactyl.echoerr("E: No TabGroup with name '" + name + "' was found!")
 }
-function groupedTabElements(group) {
-    if (!group)
-        group = TabGroupsManager.allGroups.selectedGroup
-    var ret = []
-    for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-        let group = TabGroupsManager.allGroups.childNodes.item(i).group
-        for (var j = 0; j < group.tabArray.length; j++) {
-            let tab = group.tabArray[j]
-            let guid = (tab._tPos + 1) + ": "+ tab.label
-            let caption = group.name + " - " +  template.highlightURL(tab.linkedBrowser.contentDocument.location.href)
-            let el = [guid, caption]
-            el.icon = tab.image
-            ret.push(el)
+
+function getGroupByIndex(index, type) {
+    let groups = getGroups(type)
+    if (index < 1 || index > groups.length)
+        return dactyl.echoerr("E: " + index + " is out of range!")
+    return groups[index-1]
+}
+
+function getGroupByArgs(arg, type) {
+    arg = arg && arg.replace(/^(\d+):.*/, "$1")
+
+    if (!arg || arg == "" || arg == "%")
+        return selectedGroup()
+    else if (arg == "#")
+        return alternateGroup
+    else if (arg == "^" || arg == "0")
+        return getGroups(type).shift()
+    else if (arg == "$")
+        return getGroups(type).pop()
+    else if (typeof arg == "object")
+        return arg
+    else if (typeof arg == "number" || /^\d+$/.test(arg))
+        return getGroupByIndex(arg, type)
+    else
+        return getGroupByName(arg, type)
+    return null
+}
+
+function getNextGroup(count, type) {
+    let groups = getGroups(type)
+    let index = (getGroupIndex(selectedGroup(), type) + (count || 1)) % groups.length
+
+    return groups[index]
+}
+
+function getPrevGroup(count, type) {
+    let groups = getGroups(type)
+    let index = (getGroupIndex(selectedGroup(), type) - (count || 1)) % groups.length
+
+    index+=(index<0 ? groups.length : 0)
+
+    return groups[index]
+}
+
+function getGroupTabCount(group) {
+    let count = group && group.displayTabCount || group.tabs && group.tabs.length
+    if(count)
+        return count.toString().replace(/^(\d)$/,"0$1")
+    return -1
+}
+
+function getGroupTabIndex(tab) {
+    if(tab)
+        return TGMAPI.getIndexInGroupFromTab(tab)
+    return -1
+}
+
+function selectGroup(group) {
+    if (!group || group==selectedGroup())
+        return
+    
+    alternateGroup = selectedGroup()
+    group.setSelected()
+    updateStatusline()
+}
+
+function createGroup(urls, name, act) {
+    let tab = null
+    let group = null
+     
+    if (urls.length > 0)
+        tab = TGM.overrideMethod.gBrowserAddTab(urls[0])
+
+    group = allGroups.openNewGroup(tab, null, name)
+     
+    if (act)
+        selectGroup(group)
+
+    for (var i = 1; i < urls.length; i++) {
+        let tab = TGM.overrideMethod.gBrowserAddTab(urls[i])
+        group.addTab(tab)
+    }
+    
+    dactyl.echomsg("Created TabGroup with name '" + group.name + "'")
+    updateStatusline()
+}
+
+//XXX
+function getGroupTabs(group) {
+    group = group || selectedGroup()
+    let gtabs = []
+    
+    if (group.suspendArray || group.tabs) {
+        let _tabs = group.suspendArray || group.tabs
+        
+        for (let i = 0; i < _tabs.length; i++) {
+            let t = []
+            
+            t.tab = _tabs[i]
+            
+            let tabData = JSON.parse(t.tab)
+            t.title = tabData.entries[tabData.index-1].title
+            t.url = tabData.entries[tabData.index-1].url
+            t.urispec = TGM.utils.createNewNsiUri(t.url)
+            t.id = tabData.entries[tabData.index-1].ID 
+            t.icon = tabData.attributes.image 
+
+            gtabs.push(t)
+        }
+
+    } else if (group.tabArray) {
+        for (let i = 0; i < group.tabArray.length; i++) {
+            let t = []
+
+            t.tab = group.tabArray[i]
+            
+            t.title = t.tab.linkedBrowser.contentDocument.title || t.tab.label
+            t.url = t.tab.linkedBrowser.contentDocument.location.href
+            t.urispec = t.tab.linkedBrowser.currentURI
+            t.id = t.tab._tPos+1
+            t.icon = t.tab.image
+        
+            gtabs.push(t)
         }
     }
-    return ret
-}
-function sleepingGroupElements() {
-    var ret = []
-    for (var i = 0; i < TabGroupsManager.sleepingGroups.store.length; i++) {
-        let g = TabGroupsManager.sleepingGroups.store[i]
-        let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
-        let label = g.titleList.replace(/^\s*$/,g.name)
-        
-        ret.push({
-            text: g.id + ": " + g.name,
-            description: label,
-            tabcount: count,
-            icon: g.image,
-            command: "top.TabGroupsManager.sleepingGroups.restoreGroup("+g.id+");top.TabGroupsManager.allGroups.getGroupById("+g.id+").setSelected()" 
-        });
-    }
-    return ret
-}
-function suspendedGroupElements() {
-    var ret = []
-    for (var i = 0; i < TabGroupsManager.allGroups.childNodes.length; i++) {
-        let g = TabGroupsManager.allGroups.childNodes.item(i).group
-        
-        if (!g.suspended) continue;
-        
-        let count = g.displayTabCount.toString().replace(/^(\d)$/,"0$1")
-        let label = g.suspendTitleList.replace(/^\s*$/,g.name)
-         
-        ret.push({
-            text: g.id + ": " + g.name,
-            description: label,
-            tabcount: count,
-            icon: g.image,
-            command: "top.TabGroupsManager.allGroups.getGroupById("+g.id+").setSelected()" 
-        });
-    }
-    return ret
-}
-function closedGroupElements() {
-    var ret = []
-    for (var i = 0; i < TabGroupsManager.closedGroups.store.length; i++) {
-        let g = TabGroupsManager.closedGroups.store[i]
-        let count = g.tabs.length.toString().replace(/^(\d)$/,"0$1")
-        let label = g.titleList.replace(/^\s*$/,g.name)
-        
-        ret.push({
-            text: g.id + ": " + g.name,
-            description: label,
-            tabcount: count,
-            icon: g.image,
-            command: "top.TabGroupsManager.closedGroups.restoreGroup("+g.id+");top.TabGroupsManager.allGroups.getGroupById("+g.id+").setSelected()" 
-        });
-     }
-    return ret
-}
-function restorableGroupElements() {
-    return suspendedGroupElements() + sleepingGroupElements() + closedGroupElements()
+
+    return gtabs 
 }
 
-function groupDescription(item, text)
-<>
-    <span>[{item.tabc}] <span highlight="URL" onclick={item.command}>{text}</span></span>
-</>
+function getGroupTabByArg(arg, gtabs) {
+    gtabs = gtabs || getGroupTabs(selectedGroup())
+
+    arg = arg && arg.replace(/^(\d+):.*/, "$1")
+
+    if (!arg || arg == "" || arg == "%")
+        return gBrowser.mCurrentTab
+    else if (arg == "#")
+        return tabs.alternate
+    else if (arg == "^" || arg == "0")
+        return gtabs.shift().tab
+    else if (arg == "$")
+        return gtabs.pop().tab
+    else if (typeof arg == "number" || /^\d+$/.test(arg))
+        return gtabs[parseInt(arg)-1].tab
+    else if (typeof arg == "string")
+        for (let i in gtabs)
+            if (gtabs[i].title.match(arg) || gtabs[i].url.match(arg))
+                return gtabs[i].tab
+    return null
+
+}
+
+function bookmarkGroup(group, name, parentFolder) {
+    let bmsvc = Cc["@mozilla.org/browser/nav-bookmarks-service;1"].getService(Ci.nsINavBookmarksService)
+    
+    name = name || group.name
+    parentFolder = parentFolder || bmsvc.bookmarksMenuFolder
+    
+    let index = bmsvc.DEFAULT_INDEX
+    let folder = bmsvc.createFolder(parentFolder, name, index)
+    let tabs = getGroupTabs(group)
+
+    for (let i in tabs) {
+        try {
+           bmsvc.insertBookmark(folder, tabs[i].urispec, index, tabs[i].title)
+        } catch (e) {
+            dactyl.echoerr(e.messsage)
+        }
+    }
+    
+}
+
+function bookmarkGroups(type, name) {
+    name = name || (type ? type+" " : "") + "TabGroups (" + Date() + ")"
+    
+    let bmsvc = Cc["@mozilla.org/browser/nav-bookmarks-service;1"].getService(Ci.nsINavBookmarksService)
+    let parentFolder = bmsvc.bookmarksMenuFolder
+    let index = bmsvc.DEFAULT_INDEX
+    let folder = bmsvc.createFolder(parentFolder, name, index)
+    let groups = getGroups(type)
+
+    for (let i in groups)
+        bookmarkGroup(groups[i], null, folder)
+    
+}
+
+function getGroupIcon(group) {
+    return (group.image!="") ? group.image :
+        group.selectedTab ? group.selectedTab.image : ""
+}
+
+function getGroupCommand(id, type) {
+    let cmd = "top.TabGroupsManager.allGroups.getGroupById("+id+").setSelected()"
+
+    if (type == "Sleeping")
+        cmd ="top.TabGroupsManager.sleepingGroups.restoreGroup("+id+");"+cmd
+    else if (type == "Closed")
+        cmd+="top.TabGroupsManager.closedGroups.restoreGroup("+id+");"+cmd
+
+    return cmd
+}
+
+//TODO better handling of inactive groups text
+function getGroupDescription(group, type) {
+    let text = group.name
+
+    if (group.selectedTab)
+        text = group.selectedTab.label
+    else if (group.suspendTitleList)
+        text = "(suspended) " + group.suspendTitleList.replace(/^\s*$/, group.name)
+    else if (group.titleList)
+        text = group.titleList.replace(/^\s*$/, group.name)
+
+    return  <>
+            <span>[{getGroupTabCount(group)}] </span>
+            <span highlight="URL" onclick={getGroupCommand(group.id, type)}>{text}</span>
+            </>
+}
 
 // Completion
-function completion_group(context) {
-    let filter = context.filter.toLowerCase();
-    context.anchored = false;
-    context.title = ['Group', '[Length] Tab'];
+function groupCompletion(context, args, type, caption, offset) {
+    caption = caption || (type ? type+" " : "") + "TabGroup"
+    type = type || "Visible"
+    offset = offset || 1
+
+    let items = []
+    let groups = getGroups(type)
+    
+    let filter = context.filter.toLowerCase()
+    context.anchored = false
+    context.compare = CompletionContext.Sort.number
+    context.title = [caption, "[Length] Tab(s)"]
     context.keys = {
         text: "text",
         description: "description",
-        tabc: "tabcount",
-        indicator: "indicator",
-        icon: "icon", 
-        command: "command" 
-    };
-    context.compare = CompletionContext.Sort.number;
-    //  context.pushProcessor(0, function (item, text, next) <>
-    //      <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
-    //      { next.call(this, item, text) }
-    //  </>);
-    context.process[1] = function (item, text) groupDescription(item, text);
-    context.completions = groupElements();
+        icon: "icon",
+    }
+    
+    if (options["tabgroupshowindicator"] && (type == "Visible" || type == "Active"))
+        context.pushProcessor(0, function (item, text, next) <>
+            <span highlight="Indicator" style="display: inline-block;">
+                {item.item.indicator}
+            </span>
+            { next.call(this, item, text) }
+        </>)
+    
+    for (var i = 0; i < groups.length; i++) {
+        let g = groups[i]
+        let indicator = (g==selectedGroup()) ? "%" : (g==alternateGroup) ? "#" : ""
+
+        items.push({
+            text: i+offset + ": " + (g.name || "(noname)"),
+            description: getGroupDescription(g, type),
+            indicator: indicator,
+            icon: getGroupIcon(g),
+        });
+     }
+
+    context.completions = items
 }
-function completion_groupTab(context) {
-    let filter = context.filter.toLowerCase();//{{{
-    context.anchored = false;
-    context.title = ["Group Buffers"];
-    context.keys = { text: "text", description: "url", icon: "icon" };
-         
-    context.compare = CompletionContext.Sort.number;
-    context.filters[0] = CompletionContext.Filter.textDescription;
+
+//TODO commands for inactive tabs
+function groupTabCompletion(context, args, group, caption, offset) {
+    let filter = context.filter.toLowerCase()
+
+    context.anchored = false
+    context.compare = CompletionContext.Sort.number
+    context.filters[0] = CompletionContext.Filter.textDescription
+    context.title = [caption || "TabGroup Buffers"]
+    context.keys = {
+        text: "text",
+        description: "url",
+        icon: "icon",
+        id: "id",
+        command: function () "tabs.select"
+    }
+    
     context.pushProcessor(0, function (item, text, next) <>
-        <span highlight="Indicator" style="display: inline-block;">{item.item.indicator}</span>
+        <span highlight="Indicator" style="display: inline-block;">
+            {item.item.indicator}
+        </span>
         { next.call(this, item, text) }
-    </>);
-    context.completions = groupTabElements(undefined);//}}}
-}
-function completion_groupedTab(context) {
-    context.filters = [function() true];
-    context.title = ['Grouped Buffers', 'Group - Url'];
-    context.completions = groupedTabElements(undefined);
-}
-function completion_inactiveGroup(context, caption, func){
-    filter = context.filter.toLowerCase();
-    context.anchored = false;
-    context.title = [caption, '[Length] Title list'];
-    context.keys = {
-        text: "text",
-        description: "description",
-        tabc: "tabcount",
-        icon: "icon", 
-        command: "command" 
-    };
-    context.compare = CompletionContext.Sort.number;
-    context.process[1] = function (item, text) groupDescription(item, text);
-    context.completions = func.apply();
-}
-function completion_sleepingGroup(context){
-    return completion_inactiveGroup(context, 'Sleeping Group', sleepingGroupElements)
-}
-function completion_suspendedGroup(context){
-    return completion_inactiveGroup(context, 'Suspended Group', suspendedGroupElements)
-}
-function completion_closedGroup(context){
-    return completion_inactiveGroup(context, 'Closed Group', closedGroupElements)
-}
-function completion_restorableGroup(context){
-    return completion_inactiveGroup(context, 'Group', restorableGroupElements)
-}
+    </>)
 
-// Group
-function groupLoadUrls(group, a_urls) {
-    if (!a_urls)
-        return 0
-    ret = 0
-    for (var i = a_urls.length - 1; i >= 0; i--) {
-        //if ((i == 0) && !silent) {
-        //    dactyl.open(a_urls[i], dactyl.CURRENT_TAB)
-        //} else {
-        //    dactyl.open(a_urls[i], dactyl.NEW_BACKGROUND_TAB)
-        //}
-        let tab = gBrowser.addTab(a_urls[i])
-        group.addTab(tab, false)
-        ret = ret + 1
-    }
-    return ret
-}
-function createGroup(a_urls, a_tabs, name, silent) {
-    beginUpdate()
-    let count = 0
-    if (name == "")
-        name = null
-
-    if (a_tabs.length > 0)
-        var tab = tabs[0]
-    else if (a_urls.length > 0)
-        var tab = gBrowser.addTab(a_urls[0])
-    else
-        var tab = null
-
-    if (silent)
-        var group = TabGroupsManager.allGroups.openNewGroup(tab, null, name, null)
-    else
-        var group = TabGroupsManager.allGroups.openNewGroupActive(tab, null, name, null)
-
-    // for (var i = ((a_tabs.length > 0) ? 0 : 1); i < a_urls.length; i++) {
-    //     //if ((i == 0) && !silent) {
-    //     //    dactyl.open(a_urls[i], dactyl.CURRENT_TAB)
-    //     //} else {
-    //     //    dactyl.open(a_urls[i], dactyl.NEW_BACKGROUND_TAB)
-    //     //}
-    //     tab = gBrowser.addTab(a_urls[i])
-    //     group.addTab(tab, false)
-    //     count = count + 1
-    // }
-
-    if (a_urls)
-        count = count + groupLoadUrls(group, a_urls.slice((a_tabs.length > 0) ? 0 : 1))
-
-    for (var i = 1; i < a_tabs.length; i++) {
-        group.attachTab(a_tabs[i])
-    }
-
-    dactyl.echomsg("Create group with name `" + group.name + "'")
-    endUpdate()
-}
-//XXX
-function groupRow(group) {
-    let cmd="getGroup('" + group.name + "').select()"
-    return [<>
-        <span highlight="Indicator" style="display: inline-block; width: 1.5em; text-align: center">
-            {group.indicator}
-        </span><span highlight="CompIcon">{group.icon ? <img src={group.icon}/> : <></>}</span>{group.guid}
-        </>
-        , <>[{group.tabCount}] <a href="javascript:void()" onclick={cmd} >{group.selectedTab ? group.selectedTab.label : group.name}</a>{group.selectedTab ? <></> : <> - suspended</>}</>
-    ]
-}
-//XXX
-function groupTabRow(tab) {
-    return [
-        <>
-            <span highlight="Indicator" style="display: inline-block; width: 1.5em; text-align: center">
-                {(tab._tPos == tabs.index()) ? '%' :
-                    (tab._tPos == (tabs.alternate) && tabs.alternate._tPos ? '#' : '')}
-            </span><span highlight="CompIcon">{tab.image ? <img src={tab.image}/> : <></>}</span><span class="td-strut"/>{tab._tPos+1 + ": " + tab.label}</>,
-        template.highlightURL(tab.linkedBrowser.contentDocument.location.href)
-    ];
-}
-function groupTabsTable(group, filter) {
-    let items = groupTabs(group, filter).map(groupTabRow)
-    return <div highlight="Completions">
-        { template.completionRow([group.name, ''], "CompTitle") }
-        { template.map(items, function (item) template.completionRow(item, "CompItem"), null, 100) }
-        </div>;
-}
-function showGroups(filter) {
-    let group_items = groups.items.map(function(item) groupRow(item))
-    let list = commandline.commandOutput(
-        <div highlight="Completions">
-            { template.completionRow(['Group'], "CompTitle") }
-            { template.map(group_items, function (item) template.completionRow([item[0], item[1]], "CompItem"), null, 100) }
-        </div>);
-}
-function showGroupTabs(filter) {
-    let items = currentGroup().tabsByFilter(filter).map(groupTabRow)
-    let list = commandline.commandOutput(
-        <div highlight="Completions">
-            { template.completionRow(['Group Buffers'], "CompTitle") +
-                template.map(items, function (item) template.completionRow(item, "CompItem"), null, 100) }
-        </div>);
-}
-function showGroupedTabs(filter) {
-    let groups = this.groups.getItemsByFilter("").map(function(el) el.originalItem)
-    let list = commandline.commandOutput(
-        groups.map(function(group) groupTabsTable(group, filter)).reduce(template.add)
+    context.process[1] = function (item, text)
+        template.bookmarkDescription(item, template.highlightFilter(text, this.filter)
     )
-}
-function selectPreviousGroup(count) {
-    beginUpdate()
-    if (count && (count > 0)) {
-        getGroupByIndex(count - 1).select()
-        // TODO в одно действие
-        // for (var i = 0; i < count; i++)
-        //     TabGroupsManager.allGroups.selectLeftGroup()
-    } else {
-        let prev = getPrevActiveGroup(getGroup('%').index())
-        TabGroupsManager.allGroups.selectNthGroup(prev)
+
+    let tabArray = getGroupTabs(group || selectedGroup())
+    let items = []
+    offset = offset || 1
+    
+    for (var i = 0; i < tabArray.length; i++) {
+        let tab = tabArray[i]
+        let indicator = ""
+    
+        if (tab.tab == gBrowser.mCurrentTab)
+           indicator = "%"
+        else if (tab.tab == tabs.alternate)
+           indicator = "#"
+    
+        items.push({
+            text: [
+                i+offset + ": " + (tab.title || "(Untitled)"),
+                i+offset + ": " + tab.url
+            ],
+            url: tab.url,
+            indicator: indicator,
+            icon: tab.icon || BookmarkCache.DEFAULT_FAVICON,
+            id: tab.id,
+        })
     }
-    endUpdate()
+    
+    context.completions = items
 }
-function selectNextGroup(count) {
-    beginUpdate()
-    if (count && (count > 0)) {
-        getGroupByIndex(count - 1).select()
-        // TODO в одно действие
-        // for (var i = 0; i < count; i++)
-        //     TabGroupsManager.allGroups.selectRightGroup()
-    } else {
-        let next = getNextActiveGroup(getGroup('%').index())
-        TabGroupsManager.allGroups.selectNthGroup(next)
+
+function groupedTabCompletion(context, args) {
+    let groups = getGroups("Active")
+    let offset = 1
+    for (let i = 0; i < groups.length; i++) {
+        let g = groups[i]
+        let title = <><span highlight="CompIcon">{<img src={getGroupIcon(g)}/>}</span>{
+            (g.name || "(noname)")}</>
+
+        context.fork(g.id, 0, this, function (context, args)
+            groupTabCompletion(context, args, g, title, offset)
+        )
+        offset+=groups[i].tabArray.length
     }
-    endUpdate()
 }
-function currentGroup() {
-    return new GroupProxy(TabGroupsManager.allGroups.selectedGroup.id)
-}
-function selectGroupByName(name, special, reverse) {
-    beginUpdate()
-    lastFilter = name
-    // let groups = this.groups.getItemsByFilter(name)
-    let groups = this.groups.itemsByName(name)
-    let group = null
-    if (groups.length == 0)
-        dactyl.echoerr("E: Group `" + name + "' not found");
-    else {
-        if (special) {
-            let index = -1
-            for (var i = 0; i < groups.length; i++)
-                if (groups[i].id == this.groups.current.id) {
-                        index = i
-                        break
-                }
-            if (index > -1) {
-                if (reverse)
-                    group = groups[(groups.length + index - 1) % groups.length]
-                else
-                    group = groups[(index + 1) % groups.length]
-            } else
-                group = groups[0]
-        } else {
-            group = groups[0]
-        }
-    }
-    if (group)
-        TabGroupsManager.allGroups.selectedGroup = group.originalItem
-    endUpdate()
-}
-function selectFirstGroup() {
-    beginUpdate()
-    TabGroupsManager.allGroups.selectedGroup = TabGroupsManager.allGroups.firstChild.group
-    endUpdate()
-}
-function selectLastGroup() {
-    beginUpdate()
-    TabGroupsManager.allGroups.selectedGroup = TabGroupsManager.allGroups.lastChild.group
-    endUpdate()
-}
-function selectGroup(arg, special, count) {
-    if (count > 0)
-        getGroupByIndex(count - 1).select()
-    else if (/^\d+$/.test(arg))
-        getGroupByIndex(arg - 1).select()
-    else if (special)
-        selectGroupByName(arg.replace(/\d+: /, ""), true)
-    else
-        getGroup(arg).select()
-}
-function lastSleepingGroup() {
-    return TabGroupsManager.sleepingGroups.store[TabGroupsManager.sleepingGroups.store.length - 1]
-}
-function lastClosedGroup() {
-    return TabGroupsManager.closedGroups.store[TabGroupsManager.closedGroups.store.length - 1]
-}
-function lastRestorableGroup() {
-    return lastSleepingGroup() || lastClosedGroup()
-}
-function bookmarkAllGroups(folder) {
-    beginUpdate()
-    TabGroupsManager.allGroups.bookmarkAllGroups(folder)
-    endUpdate()
-}
-function clearClosedGroupsList(args) {
-    beginUpdate()
-    TabGroupsManager.closedGroups.clear()
-    endUpdate()
-}
-function toggleGroupBar(args) {
-    TabGroupsManager.groupBarDispHide.dispGroupBar = !TabGroupsManager.groupBarDispHide.dispGroupBar
-    beginUpdate()
-    endUpdate()
-}
-function restoreLatestGroup(special) {
-    beginUpdate()
-    if (special) {
-        TabGroupsManager.closedGroups.restoreLatestGroup()
-    } else {
-        TabGroupsManager.sleepingGroups.restoreLatestGroup()
-    }
-    endUpdate()
-}
-// }}}
 
-groups = new Groups()
+function showGroups(filter) {
+    completion.listCompleter(groupCompletion, filter)
+}
 
-// }}}
+function showGroupTabs(filter) {
+    completion.listCompleter(groupTabCompletion, filter)
+}
 
-// ---------------------------
-// User Command
-// ---------------------------
-// {{{
+function showGroupedTabs(filter) {
+    completion.listCompleter(groupedTabCompletion, filter)
+}
 
-group.commands.add(['tabgr[oup]'], 'Select group',
-    function(args){
-        let special = args.bang;
-        let count   = args.count;
-        let arg     = args.literalArg;
-
-        selectGroup(arg, special, count)
+// Commands
+group.commands.add(["tabg[roup]", "tg[roup]"], "Switch to a TabGroup",
+    function (args) {
+        selectGroup(getGroupByArgs(args.count || args.literalArg))
     }, {
-        bang: true,
-        count: true,
-        argCount: '?',
-        completer: function (context) completion_group(context),
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupc[reate]'], 'Create new group',
-    function(args){
-        let arg = args.literalArg
-        let special = args.bang
-
-        createGroup([], [], arg, special)
-    }, {
-        argCount: '?',
-        bang: true,
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupo[pen]'], 'Open in new group',
-    function(args){
-        let arg = args.literalArg
-        let special = args.bang
-        let sep = RegExp(options['urlseparator'])
-        let name = args['-name']
-
-        //if (options.get("activate").has("all", "groupopen")) {
-        //    special = !special;
-        //}
-        createGroup(arg.split(sep) , [], name, special)
-    }, {
-        argCount: '?',
-        bang: true,
-        completer: function (context) completion.url(context),
+        argCount: "?",
         literal: 0,
-        privateData: true,
-        options: [{ names: ["-name", "-n"], description: "Name of the new TabGroup", type: CommandOption.STRING }]
-    }, true);
+        count: true,
+        completer: groupCompletion,
+    }
+)
 
-// TODO bang and option 'activate'
-group.commands.add(['grouptabopen'], 'Open tab into group',
-    function(args){
-        let special = args.bang;
-        let arg     = args.literalArg;
-        let group_name   = args['-tabgroup'].replace(/^\d+:\s/,"");
-        let sep = RegExp(options['urlseparator'])
-        let urls = arg.split(sep)
-
-        group = getGroup(group_name)
-
-        if (group.id > 0) {
-            if (special)
-                group.loadUrls(urls)
-            else {
-                group.select()
-                urls.map(function (url) dactyl.open(url, dactyl.NEW_TAB))
-            }
-        } else
-            dactyl.echoerr("E: tab group not found");
-    }, {
-        bang: true,
-        argCount: '?',
-        completer: function (context) completion.url(context),
-        options: [{ names: ["-tabgroup", "-tg"], description: "Name of TabGroup", type: CommandOption.STRING, completer: completion_group}],
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroups'], 'Show groups',
-    function(args){
+group.commands.add(["tabgroups", "tgls"], "Show a list of TabGroups",
+    function (args) {
         showGroups(args.literalArg)
     }, {
         argCount: "?",
         literal: 0
-    }, true);
+    }
+)
 
-group.commands.add(['tabgroupb[uffer]', 'groupt[ab]'], 'Buffer of group',
-    function(args){
-        beginUpdate()
-
-        let special = args.bang;
-        let count   = args.count;
-        let arg     = args.literalArg;
-        // TODO let group = args["-tabgroup"]
-        let group = TabGroupsManager.allGroups.selectedGroup;
-
-        if (arg && count > 0)
-            dactyl.echoerr("E488: Trailing characters");
-        else if (count > 0)
-            group.selectNthTabInGroup(count-1);
-        else if (!arg && special)
-            getGroup("").selectNextTab();
-        else if (/^\d+$/.test(arg))
-            group.selectNthTabInGroup(arg-1);
-        else if (/^\d+:/.test(arg))
-            group.selectNthTabInGroup(arg.match(/^\d+/)-1);
-        else
-            tabs.switchTo(arg, special);
-
-        endUpdate()
+group.commands.add(["tabgroupn[ext]", "tgn[ext]"], "Switch to the next TabGroup",
+    function (args) {
+        selectGroup(getNextGroup(args.count, args.bang ? "Visible" : "Active"))
     }, {
-        argCount: '?',
-        bang: true,
-        count: true,
-        completer: function (context) completion_groupTab(context),
-        literal: 0,
-        //options: [[["-tabgroup", "-tg"], commands.OPTION_STRING, null, groupElements]]
-    }, true);
+        argCount: "0",
+        count: true
+    }
+)
 
-group.commands.add(['tabgroupbuffers', 'grouptabs'], 'Show buffers of group',
-    function(args){
+group.commands.add(["tabgroupp[revious]", "tgp[revious]"], "Switch to the previous TabGroup",
+    function (args) {
+        selectGroup(getPrevGroup(args.count, args.bang ? "Visible" : "Active"))
+    }, {
+        argCount: "0",
+        count: true,
+        bang: true
+    }
+)
+
+group.commands.add(["tabgroupf[irst]", "tabgrouprew[ind]", "tgf[irst]"], "Switch to the first TabGroup",
+    function (args){
+        selectGroup(getGroupByArgs("^", args.bang ? "Visible" : "Active"))
+    }, {
+        argCount: "0",
+        bang: true
+    }
+)
+
+group.commands.add(["tabgroupl[ast]", "tgl[ast]"], "Switch to the last TabGroup",
+    function (args){
+        selectGroup(getGroupByArgs("$", args.bang ? "Visible" : "Active"))
+    }, {
+        argCount: "0",
+        bang: true
+    }
+)
+
+group.commands.add(["tabgroupcr[eate]", "tgcr[eate]"], "Create a new TabGroup",
+    function (args) {
+        createGroup([], args.literalArg, args.bang)
+    }, {
+        argCount: "?",
+        literal: 0,
+        bang: true,
+    }
+)
+
+group.commands.add(["tabgroupop[en]", "tabgroupnew", "tgop[en]", "tgnew"], "Open one or more URLs in a new TabGroup",
+    function (args) {
+        let urls = dactyl.parseURLs(args.literalArg)
+        let name = args["-name"]
+
+        createGroup(urls, name, args.bang)
+    }, {
+        literal: 0,
+        bang: true,
+        completer: function (context) completion.url(context),
+        domains: function (args) commands.get("open").domains(args),
+        privateData: true,
+        options: [{
+            names: ["-name", "-n"],
+            description: "Name of the new TabGroup",
+            type: CommandOption.STRING
+        }]
+    }
+)
+
+group.commands.add(["tabgrouprel[oad]", "tgrel[oad]"], "Reload TabGroup",
+    function (args) {
+        getGroupByArgs(args.literalArg).reloadTabsInGroup()
+    }, {
+        argCount: "?",
+        completer: groupCompletion,
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupm[ove]", "tgm[ove]"], "Move the current TabGroup",
+    function (args) {
+        let count = args.count
+        let arg = args.literalArg
+        let pos = selectedIndex()
+
+        if (count)
+            pos = count
+        else if (/^[-+]\d+$/.test(arg))
+            pos += parseInt(arg) % groupCount()
+        else if (/^\d+$/.test(arg) && parseInt(arg) > 1)
+            pos = parseInt(arg-1)
+        else
+            pos = getGroupIndex(getGroupByArgs(arg))
+         
+        if (pos >= groupCount())
+            pos = groupCount()-1
+        else if (pos < 0)
+            pos+=groupCount()
+        
+        allGroups.changeGroupOrder(selectedGroup(), pos)
+        updateStatusline()
+    }, {
+        argCount: "?",
+        count: true,
+        completer: groupCompletion,
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupren[ame]", "tgren[ame]"], "Rename TabGroup",
+    function (args) {
+        let name = args.literalArg
+        let group = getGroupByArgs(args["-tabgroup"])
+
+        if (!name && args.bang)
+            group.autoRenameNameOnly()
+        else if (name)
+            group.setName(name)
+        
+        if (name && group.name!=name)
+            return dactyl.echoerr("E: failed to rename TabGroup")
+
+        updateStatusline()
+    }, {
+        argCount: "?",
+        bang: true,
+        literal: 0,
+        options: [{
+            names: ["-tabgroup", "-tg"],
+            description: "TabGroup to rename, default is current",
+            type: CommandOption.STRING,
+            completer: groupCompletion
+        }]
+    }
+)
+
+group.commands.add(["tabgroupsu[spend]", "tgsu[spend]"], "Suspend matching TabGroup",
+    function (args) {
+        let group = getGroupByArgs(args.literalArg, "Active")
+        
+        if (!group)
+            return
+        else
+            group.suspendGroup()
+
+        dactyl.echomsg("Suspended TabGroup with name '" + group.name + "'", 2)
+        updateStatusline()
+    }, {
+        argCount: "?",
+        completer: function (context, args) groupCompletion(context, args, "Active"),
+        literal: 0,
+    }
+)
+
+group.commands.add(["tabgroupunsu[spend]", "tgunsu[spend]"], "Restore suspended TabGroup",
+    function (args) {
+        let group = getGroupByArgs(args.literalArg, "Suspended")
+        
+        if (!group)
+            return
+        else
+            group.unsuspendGroup()
+         
+        if (args.bang)
+            selectGroup(group)
+        else
+            dactyl.echomsg("Restored TabGroup with name '" + group.name + "'")
+        
+        updateStatusline()
+    }, {
+        argCount: "?",
+        bang: true,
+        completer: function (context, args) groupCompletion(context, args, "Suspended"),
+        literal: 0,
+    }
+)
+
+group.commands.add(["tabgroupsl[eep]", "tgsl[eep]"], "Sleep matching TabGroup",
+    function (args) {
+        getGroupByArgs(args.literalArg).sleepGroup()
+    }, {
+        argCount: "?",
+        completer: groupCompletion,
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupunsl[eep]", "tgunsl[eep]"], "Restore sleeping TabGroup",
+    function (args) {
+        let group = getGroupByArgs(args.literalArg, "Sleeping")
+        
+        if (!group)
+            return
+        else
+            sleepingGroups.restoreGroup(group.id)
+
+        if (args.bang)
+            selectGroup(allGroups.getGroupById(group.id))
+        else
+            dactyl.echomsg("Restored TabGroup with name '" + group.name + "'")
+        
+        updateStatusline()
+    }, {
+        argCount: "1",
+        bang: true,
+        completer: function (context, args) groupCompletion(context, args, "Sleeping"),
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupde[lete]", "tabgroupcl[ose]", "tgde[lete]", "tgcl[ose]"], "Delete matching TabGroup",
+    function (args) {
+        let group = getGroupByArgs(args.literalArg) 
+        
+        if (!group)
+            return
+        else if (args.bang)
+            group.close()
+        else
+            group.closeAllTabsAndGroup()
+        
+        dactyl.echomsg("Closed TabGroup with name '" + group.name + "'", 2)
+        updateStatusline()
+    }, {
+        argCount: "?",
+        bang: true,
+        completer: groupCompletion,
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupunde[lete]", "tabgroupuncl[ose]", "tgunde[lete]","tguncl[ose]"], "Restore closed TabGroup",
+    function (args) {
+        let group = getGroupByArgs(args.literalArg, "Closed")
+
+        if (!group)
+            return
+        else
+            closedGroups.restoreGroup(group.id)
+        
+        if (args.bang)
+            selectGroup(allGroups.getGroupById(group.id))
+        else
+            dactyl.echomsg("Restored TabGroup with name '" + group.name + "'")
+        
+        updateStatusline()
+    }, {
+        argCount: "1",
+        bang: true,
+        completer: function (context, args) groupCompletion(context, args, "Closed"),
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupundo", "tgundo", "tabgroupres[tore]", "tgres[tore]"], "Restore TabGroup",
+    function (args){
+        let group = getGroupByArgs(args.literalArg, "Restorable")
+
+        if (!group)
+            return
+        else if (allGroups.getGroupById(group.id))
+            group.unsuspendGroup()
+        else if (sleepingGroups.getGroupById(group.id))
+            sleepingGroups.restoreGroup(group.id)
+        else if (closedGroups.getGroupById(group.id))
+            closedGroups.restoreGroup(group.id)
+        else
+            return
+        
+        if (args.bang)
+            selectGroup(allGroups.getGroupById(group.id))
+        else
+            dactyl.echomsg("Restored TabGroup with name '" + group.name + "'")
+        
+        updateStatusline()
+    }, {
+        argCount: "1",
+        bang: true,
+        completer: function (context, args) {
+            let types = ["Suspended", "Sleeping", "Closed"]
+            let offset = 1
+            for (let i in types) {
+                context.fork(types[i], 0, this, function (context, args)
+                    groupCompletion(context, args, types[i], null, offset)
+                )
+                offset+=getGroups(types[i]).length
+            }
+        },
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupon[ly]", "tgon[ly]"], "Sleep or close all other TabGroups",
+    function (args) {
+        let groups = getGroups()
+        let group = selectedGroup()
+        
+        for (let i = 0; i < groups.length; i++)
+             if (groups[i]!=group)
+                if (args.bang)
+                     groups[i].closeAllTabsAndGroup()
+                else
+                    groups[i].sleepGroup()
+        
+        if (args.bang)
+            dactyl.echomsg("Closed all other TabGroups", 2)
+        else
+            dactyl.echomsg("Sent all other TabGroups to sleep", 2)
+
+        updateStatusline()
+    }, {
+        argCount: "0",
+        bang: true,
+        literal: 0
+    }
+)
+
+group.commands.add(["tabgroupdu[plicate]", "tgdu[plicate]"], "Duplicate current TabGroup",
+    function (args) {
+        let count = args.count || 1
+        let group
+
+        while (count > 0) {
+            group = selectedGroup().duplicateGroup()
+            count--
+        }
+
+        if (args.bang)
+            selectGroup(group)
+    }, {
+        argCount: "0",
+        count: true,
+        bang: true
+    }
+)
+
+//TODO sort options
+group.commands.add(["tabgroupsort", "tgsort"], "Sort TabGroups",
+    function () {
+        for (var i=1; i<=groupCount(); i++)
+            for (var j=i; j<=groupCount(); j++)
+                if (getGroupByIndex(i).name > getGroupByIndex(j).name)
+                    allGroups.changeGroupOrder(getGroupByIndex(i), j-1)
+        updateStatusline()
+    }, {
+        argCount: "0"
+    }
+)
+
+group.commands.add(["tabgroupbo[okmark]", "tgbmark"], "Bookmark TabGroup",
+    function (args){
+        let group = getGroupByArgs(args.literalArg)
+        
+        bookmarkGroup(group, args["-name"])
+        dactyl.echomsg("Bookmarked all tabs in '"+group.name+"'") 
+    }, {
+        argCount: "?",
+        completer: groupCompletion,
+        literal: 0,
+        options: [{
+            names: ["-name", "-n"],
+            description: "Name of the bookmark folder",
+            type: CommandOption.STRING
+        }]
+    }
+)
+
+group.commands.add(["tabgroupbookmarka[ll]", "tgbmarkall"], "Bookmark all TabGroups",
+    function (args) {
+        let type = args["-type"] || "Visible"
+        bookmarkGroups(type, args["-name"])
+        dactyl.echomsg("Bookmarked all "+type+" TabGroups") 
+
+    }, {
+        argCount: "?",
+        literal: 0,
+        options: [{
+            names: ["-name", "-n"],
+            description: "Name of the bookmark folder",
+            type: CommandOption.STRING
+        }, {
+            names: ["-type", "-t"],
+            description: "Type of TabGroups to bookmark",
+            type: CommandOption.STRING,
+            completer: [["Visible", "Visible TabGroups (default)"],
+                    ["Active", "Active TabGroups"],
+                    ["Suspended", "Suspended TabGroups"],
+                    ["Sleeping", "Sleeping TabGroups"],
+                    ["Closed", "Closed TabGroups"]]
+        }]
+    }
+)
+
+group.commands.add(["tabgroupdo", "tgdo"], "Execute a command in each TabGroup",
+    function (args) {
+        let groups = getGroups(args.bang ? "Visible" : "Active")
+        for (let i = 0; i < groups.length; i++) {
+            selectGroup(groups[i])
+            dactyl.execute(args.string, null, true)
+        }
+    }, {
+        argCount: "+",
+        bang: true,
+        completer: function (context) completion.command(context)
+    }
+)
+
+group.commands.add(["tabgroupclear[closedlist]"], "Clear closed TabGroups list",
+    function () {
+        closedGroups.clear()
+    }, {
+        argCount: "0"
+    }
+)
+
+group.commands.add(["tabgroupb[uffer]", "tgb[uffer]"], "Switch to a buffer in TabGroup",
+    function (args) {
+        let group = selectedGroup()
+        let tab = getGroupTabByArg(args.literalArg, getGroupTabs(group)) 
+
+        if (!tab)
+            return dactyl.echoerr("No matching Buffer for "+args.literalArg)
+
+        tabs.select(tab)
+        updateStatusline()
+    }, {
+        argCount: "?",
+        literal: 0,
+        count: true,
+        completer: groupTabCompletion,
+    }
+)
+
+group.commands.add(["tabgroupbuffers", "tgbls"], "Show a list of TabGroup buffers",
+    function (args) {
         showGroupTabs(args.literalArg)
     }, {
         argCount: "?",
         literal: 0
-    }, true);
+    }
+)
 
-group.commands.add(['tabgroupedb[uffer]', 'groupedt[ab]'], 'Buffer of group',
-    function(args){
-        beginUpdate()
+group.commands.add(["tabgroupedb[uffer]"], "Switch to a grouped buffer",
+    function (args) {
+        let gtabs = []
+        let groups = getGroups("Active")
+        
+        for (let i = 0; i < groups.length; i++)
+            gtabs = gtabs.concat(getGroupTabs(groups[i]))
 
-        let special = args.bang;
-        let count   = args.count;
-        let arg     = args.literalArg;
+        let tab = getGroupTabByArg(args.literalArg, gtabs)
+        
+        if (!tab)
+            return dactyl.echoerr("No matching Buffer for "+args.literalArg)
 
-        if (arg && count > 0)
-        {
-            if (/^\d+$/.test(arg))
-                tabs.switchTo(arg, special);
-            else
-                dactyl.echoerr("E488: Trailing characters");
-        } else if (count > 0)
-            tabs.switchTo(count.toString(), special);
-        else
-            tabs.switchTo(arg, special);
-
-        endUpdate()
+        tabs.select(tab)
+        updateStatusline()
     }, {
-        argCount: '?',
-        bang: true,
-        count: true,
-        completer: function (context) completion_groupedTab(context),
+        argCount: "?",
+        completer: groupedTabCompletion,
         literal: 0,
-    }, true);
+    }
+)
 
-group.commands.add(['tabgroupedbuffers', 'groupedtabs'], 'Show buffers grouped by active group',
-    function(args){
-        showGroupedTabs("")
+group.commands.add(["tabgroupedbuffers"], "Show a list of grouped buffers",
+    function (args) {
+        showGroupedTabs(args.literalArg)
     }, {
         argCount: "?",
         literal: 0
-    }, true);
+    }
+)
 
-group.commands.add(['tabgrouprel[oad]'], 'Reload group',
-    function(args){
-        getGroup(args.literalArg).reload()
-    }, {
-        argCount: '?',
-        completer: function (context) completion_group(context),
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupm[ove]', 'tgm[ove]'], 'Move group',
-    function(args){
-        let count = args.count
-        let arg = args.literalArg
-        let gcount = TabGroupsManager.allGroups.childNodes.length
-
-        if (count > 0)
-            getGroup('%').move(count, false)
-        else if (/^[-+]\d+$/.test(arg))
-            getGroup('%').move(parseInt(arg), false)
-        else if (/^\d+$/.test(arg)) {
-            if (parseInt(arg) < 1)
-                getGroup('%').move(0, true)
-            else if (parseInt(arg) > gcount)
-                getGroup('%').move(gcount-1, true)
-            else
-                getGroup('%').move(parseInt(arg-1), true)
-            } else {
-                let g = getGroup(arg.replace(/^\d+: /,""))
-            
-                if (g.id > 0)
-                    getGroup('%').move(g.index(), true)
-            }
-        }, {
-        argCount: '?',
-        count: true,
-        completer: function (context) completion_group(context),
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupp[revious]', 'tgp[revious]'], 'Previous group',
-    function(args){
-        selectPreviousGroup()
-    }, {
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupn[ext]', 'tgn[ext]'], 'Next group',
-    function(args){
-        selectNextGroup()
-    }, {
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupre[wind]'], 'Select first group',
-    function(args){
-        getGroup("0").select()
-    }, {
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupl[ast]', 'gl[ast]'], 'Select last group',
-    function(args){
-        getGroup("$").select()
-    }, {
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupdo', 'tgdo'], 'Execute a command in each group',
+//TODO switch for attaching to "Sleeping" groups
+group.commands.add(["tabattachtog[roup]"], "Attach the current tab to another TabGroup",
     function (args) {
-        for (let i = 0; i < groupCount(); i++) {
-            getGroupByIndex(i).select()
-            dactyl.execute(args.string, null, true);
-        }
-    }, {
-        argCount: '*',
-        completer: function (context) completion.command(context)
-    }, true);
-
-group.commands.add(['tabgroupdu[plicate]', 'tgduplicate'], 'Duplicate current group',
-    function (args) {
-        let count = args.count || 1
-
-        groups.current.duplicate(count)
-    }, {
-        argCount: '0',
-        count: true,
-    }, true);
-
-group.commands.add(['tabgroupbo[okmark]'], 'Bookmark group',
-    function(args){
-        getGroup(args.literalArg).bookmark()
-    }, {
-        argCount: '?',
-        completer: function (context) completion_group(context),
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupbookmarka[ll]'], 'Bookmark all group',
-    function(args){
-        bookmarkAllGroups(args.literalArg)
-    }, {
-        argCount: '1',
-        literal: 0
-    }, true);
-
-group.commands.add(['tabattachtog[roup]'], 'Attach the current tab to another group',
-    function(args){
-        let special = args.bang;
-        let arg = args.literalArg
-
-        if (arg) {
-            if (/^\d+:.*$/.test(arg))
-                var group = getGroup(arg.replace(/\d+: /, ""))
-            else if (/^\d+$/.test(arg))
-                var group = getGroupByIndex(parseInt(arg)-1)
-            else
-                var group = getGroup(arg)
+        let group = getGroupByArgs(args.literalArg)
         
-            if (group.id)
-                group.attachTab(null)
-            else
-                dactyl.echoerr("E: Group `" + arg + "' not found");
+        if (!group) return
 
-
-        } else if (special)
-            TabGroupsManager.allGroups.moveTabToGroupInSameWindow(gBrowser.mCurrentTab)
+        allGroups.moveTabToGroupInSameWindow(gBrowser.mCurrentTab, group, args.bang)
+        updateStatusline()
     },
     {
-        argCount: '?',
+        argCount: "?",
         bang: true,
-        count: false,
-        completer: function (context) completion_group(context),
+        completer: groupCompletion,
         literal: 0
-    }, true);
+    }
+)
 
-group.commands.add(['tabdetachtog[roup]'], 'Detach the current tab, and open it in its own group',
-    function(args){
-        let special = args.bang
-        let arg = args.literalArg
-        let tab = gBrowser.mCurrentTab
+group.commands.add(["tabdetachtog[roup]"], "Detach current tab to its own TabGroup",
+    function (args) {
+        let name = args.literalArg 
         let group = null
 
-        if (arg!="")
-            group = TabGroupsManager.allGroups.openNewGroupCore(null,arg)
+        if (name)
+            group = allGroups.openNewGroupCore(null, name)
         
-        TabGroupsManager.allGroups.moveTabToGroupInSameWindow(tab,group,special)
+        allGroups.moveTabToGroupInSameWindow(gBrowser.mCurrentTab, group, args.bang)
+        updateStatusline()
     }, {
-        argCount: '?',
-        bang: true,
-        count: false,
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgrouprename'], 'Rename group',
-    function(args){
-        getGroup('').setName(args.literalArg, args.bang)
-    }, {
-        argCount: '?',
+        argCount: "?",
         bang: true,
         literal: 0
-    }, true);
+    }
+)
 
-group.commands.add(['tabgrouponly'], 'Sleep or close all other groups',
-    function(args){
-        getGroup('').group.deleteOtherGroups(args.bang)
+group.commands.add(["tabgroupbartoggle", "tgbar"], "Toogle TabGroup bar",
+    function () {
+        TGM.groupBarDispHide.toggleDispGroupBar()
     }, {
-        argCount: '0',
-        bang: true,
-        literal: 0
-    }, true);
+        argCount: "0"
+    }
+)
 
-group.commands.add(['tabgroupd[elete]', 'tabgroupclose'], 'Delete group',
-    function(args){
-        let special = args.bang;
+// Mappings
+group.mappings.add([modes.NORMAL], ["vo"],
+    "Open one or more URLs in a new TabGroup",
+    function () CommandExMode().open("tabgroupopen ") 
+)
 
-        if (special)
-            getGroup(args.literalArg).close()
-        else
-            getGroup(args.literalArg).closeAllTabsAndSelf()
-    }, {
-        argCount: '?',
-        bang: true,
-        completer: function (context) completion_group(context),
-        literal: 0,
-    }, true);
-
-group.commands.add(['tabgroupund[elete]'], 'Restore closed group',
-    function(args){
-        let ret = restorableGroup(args.literalArg).unclose()
-        if (ret)
-            dactyl.echomsg("restored group with name `" + ret.name + "'", 9);
-        else
-            dactyl.echoerr("group not restored");
-    }, {
-        argCount: '1',
-        completer: function (context) completion_closedGroup(context),
-        literal: 0,
-    }, true);
-
-group.commands.add(['tabgroupsl[eep]'], 'Sleep group',
-    function(args){
-        getGroup(args.literalArg).sleep()
-    }, {
-        argCount: '?',
-        completer: function (context) completion_group(context),
-        literal: 0,
-    }, true);
-
-group.commands.add(['tabgroupunsl[eep]'], 'Restore sleeping group',
-    function(args){
-        let ret = restorableGroup(args.literalArg).unsleep()
-        if (ret)
-            dactyl.echomsg("restored group with name `" + ret.name + "'", 9);
-        else
-            dactyl.echoerr("group not restored");
-    }, {
-        argCount: '1',
-        completer: function (context) completion_sleepingGroup(context),
-        literal: 0,
-    }, true);
-group.commands.add(['tabgroupsu[spend]'], 'Suspend group',
-    function(args){
-        getGroup(args.literalArg).suspend()
-    }, {
-        argCount: '?',
-        completer: function (context) completion_group(context),
-        literal: 0,
-    }, true);
-
-group.commands.add(['tabgroupunsu[spend]'], 'Restore suspended group',
-    function(args){
-        getGroup(args.literalArg).unsuspend()
-    }, {
-        argCount: '?',
-        completer: function (context) completion_suspendedGroup(context),
-        literal: 0,
-    }, true);
-
-group.commands.add(['tabgroupr[estore]'], 'Restore group',
-    function(args){
-        let special = args.bang
-        let res = restorableGroup(args.literalArg).restore()
-
-        if (res) {
-            if (!special)
-                res.select()
-            dactyl.echomsg("restored group with name `" + res.name + "'");
-        } else
-            dactyl.echoerr("group not restored");
-    }, {
-        argCount: '1',
-        bang: true,
-        completer: function(context){
-            let captions = ["Suspended Groups", "Sleeping Groups", "Closed Groups"]
-            let functions = [
-                function (context) completion_suspendedGroup(context),
-                function (context) completion_sleepingGroup(context),
-                function (context) completion_closedGroup(context)
-            ]
-            context.fork.apply(context, [captions[0], 0, context, functions[0]])
-            context.fork.apply(context, [captions[1], 0, context, functions[1]])
-            context.fork.apply(context, [captions[2], 0, context, functions[2]])
-        },
-        literal: 0
-    }, true);
-
-group.commands.add(['tabgroupcl[earclosedlist]'], 'Clear closed groups list',
-    function(args){
-        clearClosedGroupsList()
-    }, {
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupu[ndo]', 'tabgrouprestorel[ast]'], 'Restore last sleeping or closed group',
-    function(args){
-        restoreLatestGroup(args.bang, args.count)
-    }, {
-        bang: true,
-        count: true,
-        argCount: '0',
-    }, true);
-
-group.commands.add(['tabgroupbartoggle'], 'Toogle group bar',
-    function(args){
-        toggleGroupBar()
-    }, {
-        argCount: '0',
-    }, true);
-
-//TODO sort options
-group.commands.add(['tabgroupsort'], 'Sort groups',
-    function(args){
-        groups.sort()
-    }, {
-        argCount: '0',
-    }, true);
-
-// }}}
-
-// ---------------------------
-// Mapping
-// ---------------------------
-// {{{
-
-group.mappings.add([modes.NORMAL], ["x"],
-    "Open one or more URLs in a new group",
-    function () { CommandExMode().open("tabgroupopen "); });
-
-group.mappings.add([modes.NORMAL], ["X"],
-    "Open one or more URLs in a new group, based on current location",
-    function () { CommandExMode().open("tabgroupopen " + buffer.URL, modes.EX); });
+group.mappings.add([modes.NORMAL], ["vO"],
+    "Open one or more URLs in a new TabGroup, based on current location",
+    function () CommandExMode().open("tabgroupopen " + buffer.URL)
+)
 
 group.mappings.add([modes.NORMAL], ["vv"],
-    "Go to the specified group from the group list.",
-    function (count) {
-        if (count && (count > 0)) {
-            getGroupByIndex(count - 1).select()
-        } else {
-            CommandExMode().open("tabgroup! ");
-        }
-    }, { count: true });
+    "Switch to a TabGroup",
+    function ({count}) {
+        if (count > 0)
+            selectGroup(getGroupByIndex(count))
+        else
+            CommandExMode().open("tabgroup ")
+    }, { count: true }
+)
 
-group.mappings.add([modes.NORMAL], ["vt"],
-    "Group tabopen",
-    function () { CommandExMode().open("grouptabopen ");
-    });
-
-//FIXME
-group.mappings.add([modes.NORMAL], ["v:"],
-    "Group command",
-    function (count) { if (count > 0) CommandExMode().open(count + "tabgroup");
-    }, { count: true });
-
-group.mappings.add([modes.NORMAL], ["V"],
-    "Show group buffer list",
-    function () { showGroups("") });
+group.mappings.add([modes.NORMAL], ["vV"],
+    "Show a list of TabGroups",
+    function () showGroups("")
+)
 
 group.mappings.add([modes.NORMAL], ["vb"],
-    "Go to the specified buffer from the group buffer list.",
-    function () {
-       // if (count) {
-       //    getGroup("").selectTab(count)
-       // } else {
-            CommandExMode().open("tabgroupbuffer! ");
-       // }
-    }
-);//, { count: true });
+    "Switch to a buffer in TabGroup",
+    function ({count}) {
+        if (count > 0)
+            selectedGroup.selectNthTabInGroup(count+1)
+        else
+            CommandExMode().open("tabgroupbuffer ")
+    }, { count: true }
+)
 
 group.mappings.add([modes.NORMAL], ["vB"],
-    "Show group tabs",
-    function () { showGroupTabs("") });
+    "Show a list of TabGroup buffers",
+    function () showGroupTabs("")
+)
 
 group.mappings.add([modes.NORMAL], ["vr"],
-    "Reload group",
-    function () { getGroup().reload() });
+    "Reload TabGroup",
+    function () selectedGroup().reloadTabsInGroup()
+)
 
 group.mappings.add([modes.NORMAL], ["vc"],
-    "Create group",
-    function (count) { createGroup([], [], "", true) },
-    { count: true });
+    "Create a new TabGroup",
+    function () CommandExMode().open("tabgroupcreate ")
+)
 
 group.mappings.add([modes.NORMAL], ["vd"],
-    "Close group",
-    function () { getGroup().closeAllTabsAndSelf() });
+    "Delete current TabGroup",
+    function () selectedGroup().closeAllTabsAndGroup()
+)
 
 group.mappings.add([modes.NORMAL], ["vD"],
-    "Close group and select previous",
-    function (count) { getGroup().closeAllTabsAndSelf(true) },
-    { count: true });
+    "Delete current TabGroup, focus tabgroup to the left",
+    function () {
+        let group = selectedGroup()
+        selectGroup(getPrevGroup(1, "Active"))
+        group.closeAllTabsAndGroup()
+    }
+)
 
 group.mappings.add([modes.NORMAL], ["vs"],
-    "Sleep group",
-    function () { getGroup().suspend() },
-    { count: false });
+    "Suspend current TabGroup",
+    function () selectedGroup().suspendGroup()
+)
 
 group.mappings.add([modes.NORMAL], ["vS"],
-    "Sleep group",
-    function () { getGroup().sleep() },
-    { count: false });
+    "Sleep current TabGroup",
+    function () selectedGroup().sleepGroup()
+)
+
 group.mappings.add([modes.NORMAL], ["vu"],
-    "Undo close last group",
-    function () { restoreLatestGroup(true) });
-
+    "Undo closing of a TabGroup",
+    function () {
+            closedGroups.restoreLatestGroup()
+            updateStatusline()
+    }
+)
+                
 group.mappings.add([modes.NORMAL], ["vU"],
-    "Restore group",
-    function () { CommandExMode().open("tabgrouprestore ") });
+    "Restore TabGroup",
+    function () CommandExMode().open("tabgrouprestore ")
+)
 
-// TODO count reaction and move to class
-group.mappings.add([modes.NORMAL], ["v<Left>", "vh", "gV", "gX"],
-    "Switch to previous group",
-    function (count) { selectPreviousGroup(count) },
-    { count: true });
+group.mappings.add([modes.NORMAL], ["v<Left>", "vh", "gV"],
+    "Go to the previous TabGroup",
+    function ({count}) selectGroup(getPrevGroup(count, "Active")), 
+    { count: true }
+)
 
-group.mappings.add([modes.NORMAL], ["v<Right>", "vl", "gv", "gx"],
-    "Switch to next group",
-    function (count) { selectNextGroup(count); },
-    { count: true });
+group.mappings.add([modes.NORMAL], ["v<Right>", "vl", "gv"],
+    "Go to the next TabGroup",
+    function ({count}) selectGroup(getNextGroup(count, "Active")), 
+    { count: true }
+)
 
 group.mappings.add([modes.NORMAL], ["v<Up>", "vk", "v^"],
-    "Switch to first group",
-    function () { selectFirstGroup() });
+    "Go to the first TabGroup",
+    function () selectGroup(getGroupByArgs("^"))
+)
 
 group.mappings.add([modes.NORMAL], ["v<Down>", "vj", "v$"],
-    "Switch to last group",
-    function () { selectLastGroup() });
-
-group.mappings.add([modes.NORMAL], ["v<"],
-    "Move group to left",
-    function ({count}) {
-        if (!count)
-            count = 1; 
-        
-        getGroup("%").move(-count)
-    }, {count: true});
+    "Go to the last TabGroup",
+    function () selectGroup(getGroupByArgs("$"))
+)
 
 group.mappings.add([modes.NORMAL], ["v>"],
-    "Move group to right",
+    "Move current TabGroup to the right",
     function ({count}) {
-        if (!count)
-            count = 1; 
+        let pos = (selectedIndex() + (count || 1)) % groupCount() 
+        allGroups.changeGroupOrder(selectedGroup(), pos)
+        updateStatusline()
+    }, { count: true }
+)
+
+group.mappings.add([modes.NORMAL], ["v<"],
+    "Move current TabGroup to the left",
+    function ({count}) {
+        let pos = (selectedIndex() - (count || 1)) % groupCount()
         
-        getGroup("%").move(count)
-    }, {count: true});
+        pos+=(pos<0 ? groupCount() : 0)
+        
+        allGroups.changeGroupOrder(selectedGroup(), pos)
+        updateStatusline()
+    }, { count: true }
+)
 
-// }}}
+// Options
+group.options.add(["tabgroupshowindicator"],
+    "Show indicators in TabGroup lists",
+    "boolean", false
+)
 
-// ---------------------------
 // Events
-// ---------------------------
-// {{{
-statusline.updateTabCount = updateTabCount
-//}}}
+statusline.updateTabCount = updateStatusline
 
 
-// vim:sw=4 ts=4 et si fdm=marker:
+// vim:sw=4 ts=4 et si:

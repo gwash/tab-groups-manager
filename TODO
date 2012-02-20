@@ -1,5 +1,5 @@
 x Add suspend/unsuspend functionality
-+ Rewrite the help page to reflect changes
+x Rewrite the help page to reflect changes
 x Fix completion matching
 + Add a way to set group icon
 + Selectively open tabs from sleeping groups
