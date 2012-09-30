@@ -504,8 +504,8 @@ var INFO =
 </plugin>
 
 // Globals
-TGM = TabGroupsManager
-TGMAPI = TabGroupsManagerApiVer1
+TGM = window.TabGroupsManager
+TGMAPI = window.TabGroupsManagerApiVer1
 allGroups = TGM.allGroups
 closedGroups = TGM.closedGroups
 sleepingGroups = TGM.sleepingGroups
